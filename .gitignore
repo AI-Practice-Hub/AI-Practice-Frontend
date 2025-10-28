@@ -1,0 +1,20 @@
+# Node.js
+frontend/node_modules/
+frontend/.next/
+frontend/.env.local
+
+# Python
+backend/venv/
+backend/__pycache__/
+backend/app.db
+backend/.env
+
+# VS Code
+.vscode/
+
+# Logs
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
