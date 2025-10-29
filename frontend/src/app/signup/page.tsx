@@ -1,10 +1,12 @@
 "use client";
 import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { api } from "@/utils/api";
+import { useAuth } from "@/hooks/useAuth";
+import { AuthForm } from "@/components/auth/AuthForm";
+import { Input } from "@/components/ui/Input";
+import { Button } from "@/components/ui/Button";
 
 export default function SignupPage() {
-  const router = useRouter();
+  const { signup } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -15,12 +17,8 @@ export default function SignupPage() {
     setLoading(true);
     setError("");
     try {
-      const res = await api.post("/auth/signup", { email, password });
-      if (res.data.id) {
-        router.push("/login");
-      } else {
-        setError("Signup failed. Please try again.");
-      }
+      await signup({ email, password });
+      // Router navigation handled by AuthContext
     } catch (err: any) {
       setError(err.response?.data?.detail || "Signup failed.");
     } finally {
@@ -29,40 +27,31 @@ export default function SignupPage() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 dark:bg-black">
-      <form
-        onSubmit={handleSubmit}
-        className="w-full max-w-md bg-white dark:bg-zinc-900 rounded-xl shadow-lg p-8 flex flex-col gap-6"
-      >
-        <h2 className="text-2xl font-bold text-center text-blue-700 dark:text-purple-300">Sign Up</h2>
-        <input
-          type="email"
-          placeholder="Email"
-          value={email}
-          onChange={e => setEmail(e.target.value)}
-          required
-          className="px-4 py-3 rounded-md border border-zinc-300 dark:border-zinc-700 bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100"
-        />
-        <input
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={e => setPassword(e.target.value)}
-          required
-          className="px-4 py-3 rounded-md border border-zinc-300 dark:border-zinc-700 bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100"
-        />
-        {error && <div className="text-red-500 text-sm text-center">{error}</div>}
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full py-3 rounded-md bg-blue-700 dark:bg-purple-600 text-white font-semibold hover:bg-blue-800 dark:hover:bg-purple-700 transition"
-        >
-          {loading ? "Signing up..." : "Sign Up"}
-        </button>
-        <div className="text-center text-sm text-zinc-600 dark:text-zinc-400">
-          Already have an account? <a href="/login" className="text-blue-700 dark:text-purple-300 hover:underline">Login</a>
-        </div>
-      </form>
-    </div>
+    <AuthForm
+      title="Sign Up"
+      onSubmit={handleSubmit}
+      error={error}
+      loading={loading}
+      footerText="Already have an account?"
+      footerLink={{ text: "Login", href: "/login" }}
+    >
+      <Input
+        type="email"
+        placeholder="Email"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+        required
+      />
+      <Input
+        type="password"
+        placeholder="Password (min 6 characters)"
+        value={password}
+        onChange={(e) => setPassword(e.target.value)}
+        required
+      />
+      <Button type="submit" disabled={loading} loading={loading}>
+        {loading ? "Signing up..." : "Sign Up"}
+      </Button>
+    </AuthForm>
   );
 }

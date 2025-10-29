@@ -4,7 +4,7 @@ from datetime import datetime
 
 
 class UserBase(BaseModel):
-    username: str
+    username: Optional[str] = None
 
 
 class UserCreate(UserBase):
@@ -19,8 +19,10 @@ class UserCreate(UserBase):
         return v
 
 
-class UserOut(UserBase):
+class UserOut(BaseModel):
     id: int
+    email: str
+    username: Optional[str] = None
     created_at: datetime
 
     model_config = {
