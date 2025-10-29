@@ -14,13 +14,13 @@ export function MessageList({ messages, chatEndRef, isThinking = false }: Messag
     return (
       <div
         className="w-full flex-1 flex flex-col justify-center items-center select-none"
-        style={{ marginTop: '25vh', marginLeft: '-3vh' }}
+        style={{ marginTop: '0vh', marginLeft: '-3vh' }}
       >
         <h1
           style={{
             fontFamily: 'Inter, system-ui, sans-serif',
             fontWeight: 600,
-            fontSize: '2.5rem',
+            fontSize: '2.8rem',
             color: '#fff',
             opacity: 0.9,
             letterSpacing: '-0.01em',
