@@ -6,5 +6,6 @@ pydantic[email]
 passlib[bcrypt]
 python-jose
 langchain
-google-generativeai
+langchain-google-genai
 pytest
+python-dotenv

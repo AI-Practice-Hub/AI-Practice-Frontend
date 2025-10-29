@@ -6,6 +6,10 @@ import db
 from datetime import datetime
 import json
 
+# LangChain Gemini integration
+from langchain_google_genai import ChatGoogleGenerativeAI
+from langchain_core.messages import HumanMessage
+import os
 router = APIRouter()
 
 def get_db():
@@ -14,6 +18,18 @@ def get_db():
         yield db_session
     finally:
         db_session.close()
+
+def get_gemini_response(user_query: str) -> str:
+    # You must set your Gemini API key in the environment variable 'GOOGLE_API_KEY'
+    api_key = os.getenv("GOOGLE_API_KEY")
+    if not api_key:
+        return "Gemini API key not set."
+    llm = ChatGoogleGenerativeAI(model="gemini-2.5-flash", google_api_key=api_key)
+    try:
+        response = llm.invoke([HumanMessage(content=user_query)])
+        return response.content if hasattr(response, 'content') else str(response)
+    except Exception as e:
+        return f"Gemini error: {e}"
 
 @router.websocket("/ws/chat/{chat_id}")
 async def websocket_endpoint(websocket: WebSocket, chat_id: int, db: Session = Depends(get_db)):
@@ -39,11 +55,16 @@ async def websocket_endpoint(websocket: WebSocket, chat_id: int, db: Session = D
             db.add(user_msg)
             db.commit()
             db.refresh(user_msg)
-            # Dummy bot reply
+            # Get Gemini response for text queries
+            bot_content = None
+            if msg_data.get("content"):
+                bot_content = get_gemini_response(msg_data["content"])
+            else:
+                bot_content = "This is a bot reply."
             bot_reply = Message(
                 chat_id=chat_id,
                 sender="bot",
-                content="This is a bot reply.",
+                content=bot_content,
                 timestamp=datetime.utcnow()
             )
             db.add(bot_reply)

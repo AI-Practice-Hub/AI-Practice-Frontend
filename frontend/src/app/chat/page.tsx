@@ -2,8 +2,11 @@
 
 
 import React, { useState, useEffect, useRef } from "react";
+import ReactMarkdown from "react-markdown";
+import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
+import { oneDark } from "react-syntax-highlighter/dist/esm/styles/prism";
 import { Menu, Image as Gallery, Mic, Send, Search, Plus, AlignJustify } from 'lucide-react';
-import "./chat-scrollbar.css";
+import "../chat-scrollbar.css";
 import { api } from "@/utils/api";
 
 
@@ -85,6 +88,12 @@ export default function ChatPage() {
   const pendingFirstMessage = useRef<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const pdfInputRef = useRef<HTMLInputElement | null>(null);
+  const chatEndRef = useRef<HTMLDivElement | null>(null);
+
+  // Auto-scroll to bottom when messages change
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
 
   // Fetch chat list on mount
   useEffect(() => {
@@ -186,7 +195,7 @@ export default function ChatPage() {
   };
 
   return (
-  <div className="flex h-screen" style={{ backgroundColor: '#212121', fontFamily: 'Inter, system-ui, sans-serif' }}>
+  <div className="flex h-screen min-h-0" style={{ backgroundColor: '#212121', fontFamily: 'Inter, system-ui, sans-serif' }}>
       {/* Sidebar */}
   <aside className={`transition-all duration-200 shadow-lg h-full flex flex-col ${sidebarOpen ? 'w-64' : 'w-16'} min-w-[4rem]`} style={{ backgroundColor: '#171717', paddingTop: '0.5rem', paddingBottom: '1.25rem' }}>
     <div className="flex items-center gap-2 pl-4 pr-2 pt-2 pb-2 min-h-[3.5rem]" style={{ borderBottom: 'none' }}>
@@ -234,7 +243,7 @@ export default function ChatPage() {
           </div>
         )}
         {sidebarOpen && (
-          <div className="flex-1 overflow-y-auto pl-4 pr-4 custom-scrollbar">
+          <div className="flex-1 overflow-y-auto pl-4 pr-4 custom-scrollbar" style={{ minHeight: 0 }}>
             {chats.map((chat) => (
               <button
                 key={chat.id}
@@ -250,7 +259,7 @@ export default function ChatPage() {
       </aside>
 
       {/* Main Chat Panel */}
-      <div className="flex-1 flex flex-col">
+  <div className="flex-1 flex flex-col min-h-0">
         {/* Navbar */}
         <nav className="flex items-center justify-between px-8 py-4" style={{ backgroundColor: '#212121' }}>
           <span className="text-2xl font-bold" style={{ color: '#fff' }}>AI Practice Hub</span>
@@ -259,115 +268,153 @@ export default function ChatPage() {
           </div>
         </nav>
         {/* Chat Area */}
-        <div className="flex-1 flex flex-col justify-end items-center px-4 pb-8">
-          {/* Welcome message for new chat */}
-          {messages.length === 0 && (
-            <div className="w-full flex-1 flex flex-col justify-center items-center select-none" style={{ marginTop: '25vh',marginLeft:'-3vh'}}>
-              <h1 style={{ fontFamily: 'Inter, system-ui, sans-serif', fontWeight: 600, fontSize: '2.5rem', color: '#fff', opacity: 0.9, letterSpacing: '-0.01em' }}>
-                Welcome to AI Practice Hub
-              </h1>
-              <p style={{ fontFamily: 'Inter, system-ui, sans-serif', fontWeight: 400, fontSize: '1.25rem', color: '#bdbdbd', marginTop: 8 }}>
-                Start a conversation or upload an image to begin.
-              </p>
-            </div>
-          )}
-          {/* Chat messages */}
-          <div className="w-full max-w-2xl flex-1 flex flex-col justify-end space-y-2">
-            {messages.map((msg, idx) => (
-              <div key={idx} className={`flex ${msg.sender === "user" ? "justify-end" : "justify-start"}`}>
-                <div
-                  className={`px-4 py-2 rounded-xl max-w-[70%] ${msg.sender === "user" ? "bg-[#b800ff] text-white" : "bg-[#232323] text-white"}`}
-                  style={{ fontFamily: 'Inter, system-ui, sans-serif', fontSize: '1.15rem', fontWeight: 500, boxShadow: '0 2px 8px 0 #0002' }}
-                >
-                  {msg.file_type === "image" && msg.file_url ? (
-                    <img src={msg.file_url} alt={msg.file_name} className="max-w-xs max-h-48 rounded" />
-                  ) : msg.file_type === "pdf" && msg.file_url ? (
-                    <a href={msg.file_url} target="_blank" rel="noopener noreferrer" className="underline text-blue-300">{msg.file_name || "PDF"}</a>
-                  ) : msg.file_type === "audio" && msg.file_url ? (
-                    <audio controls src={msg.file_url} className="w-full" />
-                  ) : (
-                    msg.content
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
-          {/* Modern Input Box - single capsule */}
-          <form
-            className="w-full max-w-2xl flex justify-center mt-4"
-            onSubmit={handleSend}
-            autoComplete="off"
-          >
-            <div
-              className="flex items-center w-full bg-[#232323] rounded-full px-3 py-2"
-              style={{
-                border: '2px solid #fff',
-                boxShadow: '0 0 0 2px #fff2',
-                minHeight: 56,
-                transition: 'border 0.2s, box-shadow 0.2s',
-                gap: 8,
-              }}
-            >
-              {/* Gallery upload */}
-              <button
-                type="button"
-                onClick={() => fileInputRef.current?.click()}
-                className="flex items-center justify-center w-10 h-10 rounded-full bg-transparent hover:bg-[#292929] transition focus:outline-none"
-                title="Upload image"
-                tabIndex={0}
-              >
-                <Gallery size={22} color="#fff" />
-              </button>
-              <input
-                type="file"
-                accept="image/*"
-                ref={fileInputRef}
-                style={{ display: "none" }}
-                onChange={e => handleFileChange(e, "image")}
-              />
-              {/* Text input */}
-              <input
-                type="text"
-                className="flex-1 bg-transparent border-none outline-none text-white placeholder-[#bdbdbd] font-normal text-base px-2"
-                placeholder="Type your message..."
-                value={input}
-                onChange={e => setInput(e.target.value)}
-                style={{ fontFamily: 'Inter, system-ui, sans-serif', fontSize: '1.1rem', minHeight: 40, fontWeight: 400 }}
-              />
-              {/* Mic or Send button toggle */}
-              {input.trim() === "" && !recording ? (
-                <button
-                  type="button"
-                  onClick={handleStartRecording}
-                  className="flex items-center justify-center w-10 h-10 rounded-full bg-transparent hover:bg-[#292929] transition focus:outline-none"
-                  title="Record audio"
-                  tabIndex={0}
-                >
-                  <Mic size={22} color="#fff" />
-                </button>
-              ) : !recording ? (
-                <button
-                  type="submit"
-                  className="flex items-center justify-center w-10 h-10 rounded-full bg-[#27292b] hover:bg-[#232323] transition focus:outline-none"
-                  title="Send message"
-                  tabIndex={0}
-                >
-                  <Send size={22} color="#fff" />
-                </button>
-              ) : (
-                <button
-                  type="button"
-                  onClick={handleStopRecording}
-                  className="flex items-center justify-center w-10 h-10 rounded-full bg-red-700 animate-pulse transition focus:outline-none"
-                  title="Stop recording"
-                  tabIndex={0}
-                >
-                  <Mic size={22} color="#fff" />
-                </button>
-              )}
-            </div>
-          </form>
+  <div className="flex-1 flex flex-col min-h-0 w-full">
+      {/* Welcome message for new chat */}
+      {messages.length === 0 && (
+        <div className="w-full flex-1 flex flex-col justify-center items-center select-none" style={{ marginTop: '25vh',marginLeft:'-3vh'}}>
+          <h1 style={{ fontFamily: 'Inter, system-ui, sans-serif', fontWeight: 600, fontSize: '2.5rem', color: '#fff', opacity: 0.9, letterSpacing: '-0.01em' }}>
+            Welcome to AI Practice Hub
+          </h1>
+          <p style={{ fontFamily: 'Inter, system-ui, sans-serif', fontWeight: 400, fontSize: '1.25rem', color: '#bdbdbd', marginTop: 8 }}>
+            Start a conversation or upload an image to begin.
+          </p>
         </div>
+      )}
+      {/* Chat messages - scrollable area fills available space */}
+      <div className="flex-1 overflow-y-auto custom-scrollbar" style={{ minHeight: 0, padding: '0 2rem' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', maxWidth: '48rem', margin: '0 auto', width: '100%', paddingTop: '1rem', paddingBottom: '1rem' }}>
+        {messages.map((msg, idx) => (
+          <div key={idx} className={`flex ${msg.sender === "user" ? "justify-end" : "justify-start"}`}>
+            {/* User message bubble */}
+            {msg.sender === "user" ? (
+              <div
+                className="px-4 py-2 rounded-xl break-words whitespace-pre-wrap bg-[#b800ff] text-white"
+                style={{ fontFamily: 'Inter, system-ui, sans-serif', fontSize: '1.15rem', fontWeight: 500, boxShadow: '0 2px 8px 0 #0002', wordBreak: 'break-word', overflowWrap: 'anywhere', maxWidth: '70%' }}
+              >
+                {msg.content}
+              </div>
+            ) : (
+              // Bot reply as markdown block (ChatGPT style)
+              <div
+                className="w-full bg-[#18181a] text-[#ededed] rounded-xl p-6 shadow-md border border-[#232323]"
+                style={{ fontFamily: 'Inter, system-ui, sans-serif', fontSize: '1.08rem', fontWeight: 400, margin: '0.5rem 0', overflowX: 'auto' }}
+              >
+                <ReactMarkdown
+                  children={msg.content || ''}
+                  components={{
+                    pre({children, ...props}) {
+                      return (
+                        <div style={{margin: '0.5rem 0'}}>
+                          {children}
+                        </div>
+                      );
+                    },
+                    code({node, inline, className, children, ...props}) {
+                      const match = /language-(\w+)/.exec(className || "");
+                      if (!inline && match) {
+                        return (
+                          <SyntaxHighlighter
+                            style={oneDark}
+                            language={match[1]}
+                            customStyle={{ borderRadius: 8, fontSize: '1rem' }}
+                            {...props}
+                          >
+                            {String(children).replace(/\n$/, "")}
+                          </SyntaxHighlighter>
+                        );
+                      }
+                      return (
+                        <code className={className} style={{ background: '#232323', borderRadius: 4, padding: '2px 6px', fontSize: '1em' }} {...props}>
+                          {children}
+                        </code>
+                      );
+                    }
+                  }}
+                />
+              </div>
+            )}
+          </div>
+        ))}
+        <div ref={chatEndRef} />
+        </div>
+      </div>
+      {/* Modern Input Box - single capsule - stays fixed below chat messages */}
+      <form
+        className="w-full flex justify-center mt-4 px-4 pb-8"
+        onSubmit={handleSend}
+        autoComplete="off"
+        style={{ flexShrink: 0 }}
+      >
+        <div
+          className="flex items-center w-full bg-[#232323] rounded-full px-3 py-2"
+          style={{
+            border: '2px solid #fff',
+            boxShadow: '0 0 0 2px #fff2',
+            minHeight: 56,
+            transition: 'border 0.2s, box-shadow 0.2s',
+            gap: 8,
+          }}
+        >
+          {/* Gallery upload */}
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            className="flex items-center justify-center w-10 h-10 rounded-full bg-transparent hover:bg-[#292929] transition focus:outline-none"
+            title="Upload image"
+            tabIndex={0}
+          >
+            <Gallery size={22} color="#fff" />
+          </button>
+          <input
+            type="file"
+            accept="image/*"
+            ref={fileInputRef}
+            style={{ display: "none" }}
+            onChange={e => handleFileChange(e, "image")}
+          />
+          {/* Text input */}
+          <input
+            type="text"
+            className="flex-1 bg-transparent border-none outline-none text-white placeholder-[#bdbdbd] font-normal text-base px-2"
+            placeholder="Type your message..."
+            value={input}
+            onChange={e => setInput(e.target.value)}
+            style={{ fontFamily: 'Inter, system-ui, sans-serif', fontSize: '1.1rem', minHeight: 40, fontWeight: 400 }}
+          />
+          {/* Mic or Send button toggle */}
+          {input.trim() === "" && !recording ? (
+            <button
+              type="button"
+              onClick={handleStartRecording}
+              className="flex items-center justify-center w-10 h-10 rounded-full bg-transparent hover:bg-[#292929] transition focus:outline-none"
+              title="Record audio"
+              tabIndex={0}
+            >
+              <Mic size={22} color="#fff" />
+            </button>
+          ) : !recording ? (
+            <button
+              type="submit"
+              className="flex items-center justify-center w-10 h-10 rounded-full bg-[#27292b] hover:bg-[#232323] transition focus:outline-none"
+              title="Send message"
+              tabIndex={0}
+            >
+              <Send size={22} color="#fff" />
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={handleStopRecording}
+              className="flex items-center justify-center w-10 h-10 rounded-full bg-red-700 animate-pulse transition focus:outline-none"
+              title="Stop recording"
+              tabIndex={0}
+            >
+              <Mic size={22} color="#fff" />
+            </button>
+          )}
+        </div>
+      </form>
+  </div>
       </div>
     </div>
   );
