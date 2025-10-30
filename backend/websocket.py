@@ -46,13 +46,16 @@ async def websocket_endpoint(
     
     try:
         payload = auth.decode_access_token(token)
-        user_email = payload.get("sub")
-        if not user_email:
+        user_id = payload.get("sub")
+        if not user_id:
             await websocket.close(code=1008, reason="Invalid token")
             return
         
+        # Convert user_id to int
+        user_id = int(user_id)
+        
         # Verify user exists
-        user = db.query(User).filter(User.email == user_email).first()
+        user = db.query(User).filter(User.id == user_id).first()
         if not user:
             await websocket.close(code=1008, reason="User not found")
             return

@@ -6,19 +6,9 @@ from schemas import ChatCreate, ChatOut, MessageCreate, MessageOut
 import db
 from datetime import datetime
 from fastapi import Query
+from auth import get_current_user_id, get_db
 
 router = APIRouter()
-
-def get_db():
-    db_session = db.SessionLocal()
-    try:
-        yield db_session
-    finally:
-        db_session.close()
-
-# Dummy dependency for user_id (replace with real auth later)
-def get_current_user_id():
-    return 1  # Replace with actual user ID from auth
 
 @router.post("/chat/", response_model=ChatOut)
 def create_chat(chat: ChatCreate, db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):

@@ -47,6 +47,7 @@ export function ChatSidebar({
         backgroundColor: '#171717',
         paddingTop: '0.5rem',
         paddingBottom: '1.25rem',
+        borderRight: `${open ? 'none' : '1px solid #505050ff'}`
       }}
     >
       {/* Header */}
