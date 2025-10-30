@@ -103,21 +103,21 @@ export function ChatInput({
 
   return (
     <form
-      className="w-full flex justify-center pb-4"
+      className="w-full flex justify-center pb-2 sm:pb-4 px-4 sm:px-6 md:px-8"
       onSubmit={handleSubmit}
       autoComplete="off"
-      style={{ flexShrink: 0, padding: '0 2rem 1rem 2rem' }}
+      style={{ flexShrink: 0 }}
     >
       <div
         style={{
-          maxWidth: '48rem',
+          maxWidth: '49rem',
           width: '100%',
           margin: '0 auto',
         }}
       >
         {/* File Previews Gallery */}
         {filePreviews.length > 0 && (
-          <div className="mb-3 flex flex-wrap gap-2">
+          <div className="mb-2 sm:mb-3 flex flex-wrap gap-1.5 sm:gap-2">
             {filePreviews.map((filePreview, index) => (
               <div key={index} className="relative inline-block">
                 <div className="relative rounded-lg overflow-hidden border-2 border-[#404040] bg-[#2a2a2a]">
@@ -125,27 +125,27 @@ export function ChatInput({
                     <img
                       src={filePreview.preview}
                       alt={`Preview ${index + 1}`}
-                      className="w-[70px] h-[70px] object-cover"
+                      className="w-[60px] h-[60px] sm:w-[70px] sm:h-[70px] object-cover"
                     />
                   ) : (
-                    <div className="w-[70px] h-[70px] flex flex-col items-center justify-center bg-[#2a2a2a]">
-                      <FileText size={28} color="#888" />
-                      <span className="text-[10px] text-[#888] mt-1">PDF</span>
+                    <div className="w-[60px] h-[60px] sm:w-[70px] sm:h-[70px] flex flex-col items-center justify-center bg-[#2a2a2a]">
+                      <FileText size={24} className="sm:w-7 sm:h-7" color="#888" />
+                      <span className="text-[9px] sm:text-[10px] text-[#888] mt-1">PDF</span>
                     </div>
                   )}
                   <button
                     type="button"
                     onClick={() => removeFile(index)}
-                    className="absolute -top-2 -right-2 bg-red-600 hover:bg-red-700 rounded-full p-1 transition shadow-md"
+                    className="absolute -top-1.5 -right-1.5 sm:-top-2 sm:-right-2 bg-red-600 hover:bg-red-700 rounded-full p-0.5 sm:p-1 transition shadow-md"
                     title="Remove file"
                   >
-                    <X size={14} color="#fff" />
+                    <X size={12} className="sm:w-3.5 sm:h-3.5" color="#fff" />
                   </button>
                 </div>
               </div>
             ))}
             {filePreviews.length < MAX_FILES && (
-              <span className="text-xs text-[#888] self-end pb-2">
+              <span className="text-[10px] sm:text-xs text-[#888] self-end pb-1.5 sm:pb-2">
                 {MAX_FILES - filePreviews.length} more allowed
               </span>
             )}
@@ -154,25 +154,24 @@ export function ChatInput({
 
         {/* Input Container */}
         <div
-          className="flex items-end bg-[#303030] rounded-full px-3 py-2"
+          className="flex items-end bg-transparent rounded-full px-2 sm:px-3 py-1.5 sm:py-2 gap-1.5 sm:gap-2"
           style={{
             border: '1px solid #505050ff',
             boxShadow: '0 0 0 1px #fff2',
-            minHeight: 56,
+            minHeight: 48,
             transition: 'border 0.2s, box-shadow 0.2s',
-            gap: 8,
           }}
         >
           {/* File upload button (images + PDFs) */}
           <button
             type="button"
             onClick={() => fileInputRef.current?.click()}
-            className="flex items-center justify-center w-10 h-10 rounded-full bg-transparent hover:bg-[#404040] transition focus:outline-none flex-shrink-0"
+            className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-transparent hover:bg-[#404040] transition focus:outline-none flex-shrink-0"
             title="Upload files (images/PDFs)"
             tabIndex={0}
             disabled={filePreviews.length >= MAX_FILES}
           >
-            <Paperclip size={22} color={filePreviews.length >= MAX_FILES ? '#555' : '#fff'} />
+            <Paperclip size={18} className="sm:w-[22px] sm:h-[22px]" color={filePreviews.length >= MAX_FILES ? '#555' : '#fff'} />
           </button>
           <input
             type="file"
@@ -192,7 +191,7 @@ export function ChatInput({
           {/* Auto-expanding Textarea */}
           <textarea
             ref={textareaRef}
-            className="flex-1 bg-transparent border-none outline-none text-white placeholder-[#bdbdbd] font-normal resize-none custom-scrollbar"
+            className="flex-1 bg-transparent border-none outline-none text-white placeholder-[#bdbdbd] font-normal resize-none custom-scrollbar text-sm sm:text-base"
             placeholder="Type your message..."
             value={value}
             onChange={(e) => onChange(e.target.value)}
@@ -205,13 +204,12 @@ export function ChatInput({
             rows={1}
             style={{
               fontFamily: 'Inter, system-ui, sans-serif',
-              fontSize: '1.1rem',
               fontWeight: 400,
-              minHeight: '40px',
-              maxHeight: '200px',
+              minHeight: '36px',
+              maxHeight: '160px',
               overflowY: 'auto',
-              paddingTop: '8px',
-              paddingBottom: '8px',
+              paddingTop: '6px',
+              paddingBottom: '6px',
             }}
           />
 
@@ -220,30 +218,30 @@ export function ChatInput({
             <button
               type="button"
               onClick={onStartRecording}
-              className="flex items-center justify-center w-10 h-10 rounded-full bg-transparent hover:bg-[#404040] transition focus:outline-none flex-shrink-0"
+              className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-transparent hover:bg-[#404040] transition focus:outline-none flex-shrink-0"
               title="Record audio"
               tabIndex={0}
             >
-              <Mic size={22} color="#fff" />
+              <Mic size={18} className="sm:w-[22px] sm:h-[22px]" color="#fff" />
             </button>
           ) : !recording ? (
             <button
               type="submit"
-              className="flex items-center justify-center w-10 h-10 rounded-full bg-[#27292b] hover:bg-[#1a1a1a] transition focus:outline-none flex-shrink-0"
+              className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-transparent hover:bg-[#404040] transition focus:outline-none flex-shrink-0"
               title="Send message"
               tabIndex={0}
             >
-              <Send size={22} color="#fff" />
+              <Send size={18} className="sm:w-[22px] sm:h-[22px]" color="#fff" />
             </button>
           ) : (
             <button
               type="button"
               onClick={onStopRecording}
-              className="flex items-center justify-center w-10 h-10 rounded-full bg-red-700 animate-pulse transition focus:outline-none flex-shrink-0"
+              className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-red-700 animate-pulse transition focus:outline-none flex-shrink-0"
               title="Stop recording"
               tabIndex={0}
             >
-              <Mic size={22} color="#fff" />
+              <Mic size={18} className="sm:w-[22px] sm:h-[22px]" color="#fff" />
             </button>
           )}
         </div>

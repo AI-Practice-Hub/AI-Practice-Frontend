@@ -3,7 +3,7 @@ import React from 'react';
 export function ThinkingLoader() {
   return (
     <div
-      className="w-full bg-[#18181a] text-[#ededed] rounded-xl p-6 shadow-md border border-[#232323]"
+      className="w-full bg-transparent text-[#ededed] rounded-xl"
       style={{
         fontFamily: 'Inter, system-ui, sans-serif',
         fontSize: '1.08rem',

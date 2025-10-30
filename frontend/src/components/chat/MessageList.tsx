@@ -13,15 +13,12 @@ export function MessageList({ messages, chatEndRef, isThinking = false }: Messag
   if (messages.length === 0 && !isThinking) {
     return (
       <div
-        className="w-full flex-1 flex flex-col justify-center items-center select-none"
-        style={{ marginTop: '0vh', marginLeft: '-3vh' }}
+        className="w-full flex-1 flex flex-col justify-center items-center select-none px-4"
       >
         <h1
+          className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-semibold text-white text-center"
           style={{
             fontFamily: 'Inter, system-ui, sans-serif',
-            fontWeight: 600,
-            fontSize: '2.8rem',
-            color: '#fff',
             opacity: 0.9,
             letterSpacing: '-0.01em',
           }}
@@ -29,12 +26,10 @@ export function MessageList({ messages, chatEndRef, isThinking = false }: Messag
           Welcome to AI Practice Hub
         </h1>
         <p
+          className="text-base sm:text-lg md:text-xl text-[#bdbdbd] mt-2 text-center"
           style={{
             fontFamily: 'Inter, system-ui, sans-serif',
             fontWeight: 400,
-            fontSize: '1.25rem',
-            color: '#bdbdbd',
-            marginTop: 8,
           }}
         >
           Start a conversation or upload an image to begin.
@@ -45,8 +40,8 @@ export function MessageList({ messages, chatEndRef, isThinking = false }: Messag
 
   return (
     <div
-      className="flex-1 overflow-y-auto custom-scrollbar"
-      style={{ minHeight: 0, padding: '0 2rem' }}
+      className="flex-1 overflow-y-auto custom-scrollbar px-4 sm:px-6 md:px-8"
+      style={{ minHeight: 0 }}
     >
       <div
         style={{

@@ -100,6 +100,15 @@ function ChatPageContent() {
   const [input, setInput] = useState("");
   const chatEndRef = useRef<HTMLDivElement>(null);
 
+  // Close sidebar on mobile when chat is selected
+  const handleSelectChatMobile = (chatId: number | null) => {
+    handleSelectChat(chatId);
+    // Close sidebar on mobile after selection
+    if (window.innerWidth < 768) {
+      setSidebarOpen(false);
+    }
+  };
+
   // Auto-scroll to bottom when messages change
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -224,26 +233,34 @@ function ChatPageContent() {
 
   return (
     <div
-      className="flex h-screen min-h-0"
+      className="flex h-screen min-h-0 relative"
       style={{ backgroundColor: '#212121', fontFamily: 'Inter, system-ui, sans-serif' }}
     >
+      {/* Mobile Sidebar Overlay */}
+      {sidebarOpen && (
+        <div
+          className="md:hidden fixed inset-0 bg-black/50 z-40"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
       {/* Sidebar */}
       <ChatSidebar
         chats={chats}
         selectedChat={selectedChat}
-        onSelectChat={handleSelectChat}
+        onSelectChat={handleSelectChatMobile}
         onNewChat={handleNewChat}
         open={sidebarOpen}
         onToggle={() => setSidebarOpen((v) => !v)}
       />
 
       {/* Main Chat Panel */}
-      <div className="flex-1 flex flex-col min-h-0">
+      <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
         {/* Header */}
-        <ChatHeader />
+        <ChatHeader onMenuClick={() => setSidebarOpen(true)} />
 
         {/* Chat Area */}
-        <div className="flex-1 flex flex-col min-h-0 w-full">
+        <div className="flex-1 flex flex-col min-h-0 w-full overflow-hidden">
           {/* Messages */}
           <MessageList messages={messages} chatEndRef={chatEndRef} isThinking={isThinking} />
 

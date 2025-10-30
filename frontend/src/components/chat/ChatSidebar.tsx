@@ -33,11 +33,16 @@ export function ChatSidebar({
       return title.includes(query);
     });
   }, [chats, searchQuery]);
+  
   return (
     <aside
-      className={`transition-all duration-200 shadow-lg h-full flex flex-col ${
-        open ? 'w-64' : 'w-16'
-      } min-w-[4rem]`}
+      className={`
+        transition-all duration-200 shadow-lg h-full flex flex-col
+        md:relative fixed inset-y-0 left-0 z-50
+        ${open ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
+        ${open ? 'w-64' : 'w-0 md:w-16'}
+        min-w-0 md:min-w-[4rem]
+      `}
       style={{
         backgroundColor: '#171717',
         paddingTop: '0.5rem',
@@ -73,11 +78,11 @@ export function ChatSidebar({
         )}
       </div>
 
-      {/* New Chat Button */}
+      {/* New Chat Button - Hidden on mobile, shown on tablet+ */}
       {open ? (
         <button
           onClick={onNewChat}
-          className="flex items-center gap-2 pl-3 pr-3 py-2 mt-1 mb-2 rounded-lg bg-[#232323] hover:bg-[#292929] text-white font-semibold transition shadow-none border border-[#232323] w-[90%] mx-auto h-11 min-h-[44px]"
+          className="hidden md:flex items-center gap-2 pl-3 pr-3 py-2 mt-1 mb-2 rounded-lg bg-[#232323] hover:bg-[#292929] text-white font-semibold transition shadow-none border border-[#232323] w-[90%] mx-auto h-11 min-h-[44px]"
         >
           <Plus size={18} />
           <span>New chat</span>
@@ -85,7 +90,7 @@ export function ChatSidebar({
       ) : (
         <button
           onClick={onNewChat}
-          className="flex items-center justify-center mx-auto mt-8 mb-2 w-10 h-10 rounded-full bg-[#232323] hover:bg-[#292929] text-white transition shadow-none border border-[#232323]"
+          className="hidden md:flex items-center justify-center mx-auto mt-8 mb-2 w-10 h-10 rounded-full bg-[#232323] hover:bg-[#292929] text-white transition shadow-none border border-[#232323]"
           title="New chat"
         >
           <Plus size={20} />
