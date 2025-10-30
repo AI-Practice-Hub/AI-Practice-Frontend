@@ -24,6 +24,14 @@ export function useWebSocket(
   const wsRef = useRef<WebSocket | null>(null);
   const isConnectedRef = useRef(false);
   const pendingMessagesRef = useRef<string[]>([]);
+  
+  // Store the callback in a ref to avoid recreating WebSocket on every render
+  const onMessageRef = useRef(onMessage);
+  
+  // Update ref when callback changes, but don't trigger useEffect
+  useEffect(() => {
+    onMessageRef.current = onMessage;
+  }, [onMessage]);
 
   useEffect(() => {
     if (!chatId) {
@@ -64,8 +72,9 @@ export function useWebSocket(
     ws.onmessage = (event) => {
       try {
         const data = JSON.parse(event.data);
-        if (onMessage) {
-          onMessage(data);
+        // Use ref.current to always get the latest callback
+        if (onMessageRef.current) {
+          onMessageRef.current(data);
         }
       } catch (error) {
         console.error('WebSocket message parse error:', error);
@@ -90,7 +99,7 @@ export function useWebSocket(
       }
       isConnectedRef.current = false;
     };
-  }, [chatId, onMessage]);
+  }, [chatId]); // ✅ Only depends on chatId now!
 
   const sendMessage = useCallback((message: WebSocketMessage) => {
     const messageStr = JSON.stringify(message);
