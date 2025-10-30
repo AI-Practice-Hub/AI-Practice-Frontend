@@ -4,6 +4,13 @@ export type Sender = "user" | "bot";
 
 export type MessageType = "text" | "image" | "pdf" | "audio";
 
+export interface MessageAttachment {
+  type: 'image' | 'pdf';
+  name: string;
+  url: string;
+  size?: number;
+}
+
 export interface Message {
   id?: number;
   chat_id?: number;
@@ -12,6 +19,7 @@ export interface Message {
   file_type?: MessageType;
   file_name?: string;
   file_url?: string;
+  attachments?: MessageAttachment[]; // Support multiple attachments
   timestamp: string;
 }
 

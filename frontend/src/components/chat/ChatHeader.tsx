@@ -8,7 +8,7 @@ export function ChatHeader({ title = 'AI Practice Hub' }: ChatHeaderProps) {
   return (
     <nav
       className="flex items-center justify-between px-8 py-4"
-      style={{ backgroundColor: '#212121' }}
+      style={{ backgroundColor: '#212121', borderBottom: '1px solid #505050ff' }}
     >
       <span className="text-2xl font-bold" style={{ color: '#fff' }}>
         {title}

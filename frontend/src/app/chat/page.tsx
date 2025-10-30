@@ -1,17 +1,56 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import "../chat-scrollbar.css";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { useChat, useWebSocket, useAudioRecorder, useToast } from "@/hooks";
-import { ChatSidebar, ChatHeader, MessageList, ChatInput, ThinkingLoader } from "@/components/chat";
+import { ChatSidebar, ChatHeader, MessageList, ChatInput, ThinkingLoader, FilePreview } from "@/components/chat";
+import { MessageAttachment } from "@/types/chat";
 
 function ChatPageContent() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  
   // Toast notifications
   const toast = useToast();
   
   // Chat management
   const { chats, selectedChat, messages, createChat, selectChat, addMessage, loading } = useChat();
+  
+  // Track if we've initialized from URL
+  const [urlInitialized, setUrlInitialized] = useState(false);
+  
+  // Initialize selected chat from URL on mount
+  useEffect(() => {
+    if (!urlInitialized && chats.length > 0) {
+      const chatIdFromUrl = searchParams.get('id');
+      if (chatIdFromUrl) {
+        const chatId = parseInt(chatIdFromUrl, 10);
+        if (!isNaN(chatId)) {
+          // Check if chat exists in the list
+          const chatExists = chats.some(chat => chat.id === chatId);
+          if (chatExists) {
+            selectChat(chatId);
+          } else {
+            // Chat doesn't exist, clear URL
+            router.replace('/chat');
+          }
+        }
+      }
+      setUrlInitialized(true);
+    }
+  }, [urlInitialized, chats, searchParams, selectChat, router]);
+  
+  // Custom select chat function that updates URL
+  const handleSelectChat = (chatId: number | null) => {
+    selectChat(chatId);
+    if (chatId) {
+      router.push(`/chat?id=${chatId}`);
+    } else {
+      router.push('/chat');
+    }
+  };
   
   // Thinking state (bot is typing)
   const [isThinking, setIsThinking] = useState(false);
@@ -68,27 +107,53 @@ function ChatPageContent() {
 
   // Create new chat
   const handleNewChat = async () => {
-    await createChat("New Chat");
+    const newChat = await createChat("New Chat");
+    // Update URL with new chat ID
+    router.push(`/chat?id=${newChat.id}`);
   };
 
   // Send message
-  const handleSend = async (e: React.FormEvent) => {
+  const handleSend = async (e: React.FormEvent, files: FilePreview[]) => {
     e.preventDefault();
-    if (!input.trim()) return;
+    if (!input.trim() && files.length === 0) return;
     
     let chatId = selectedChat;
+    
+    // Convert files to attachments
+    const attachments: MessageAttachment[] = files.map(f => ({
+      type: f.type,
+      name: f.file.name,
+      url: f.preview, // Use the data URL for display
+      size: f.file.size,
+    }));
     
     // If no chat selected, create one first and send message
     if (!chatId) {
       try {
-        const newChat = await createChat(input.slice(0, 30));
+        const newChat = await createChat(input.slice(0, 30) || 'New Chat');
         chatId = newChat.id;
         
+        // Update URL with new chat ID
+        router.push(`/chat?id=${chatId}`);
+        
         // Send message after chat is created
-        sendMessage({ type: "text", content: input });
+        if (input.trim()) {
+          sendMessage({ type: "text", content: input });
+        }
+        
+        // Send file messages
+        files.forEach(file => {
+          sendMessage({
+            type: file.type,
+            file_name: file.file.name,
+            file_size: file.file.size
+          });
+        });
+        
         addMessage({
           sender: "user",
-          content: input,
+          content: input.trim() || null,
+          attachments: attachments.length > 0 ? attachments : undefined,
           timestamp: new Date().toISOString(),
         });
         setInput("");
@@ -100,10 +165,23 @@ function ChatPageContent() {
     }
     
     // Send message via WebSocket
-    sendMessage({ type: "text", content: input });
+    if (input.trim()) {
+      sendMessage({ type: "text", content: input });
+    }
+    
+    // Send file messages
+    files.forEach(file => {
+      sendMessage({
+        type: file.type,
+        file_name: file.file.name,
+        file_size: file.file.size
+      });
+    });
+    
     addMessage({
       sender: "user",
-      content: input,
+      content: input.trim() || null,
+      attachments: attachments.length > 0 ? attachments : undefined,
       timestamp: new Date().toISOString(),
     });
     setInput("");
@@ -153,7 +231,7 @@ function ChatPageContent() {
       <ChatSidebar
         chats={chats}
         selectedChat={selectedChat}
-        onSelectChat={selectChat}
+        onSelectChat={handleSelectChat}
         onNewChat={handleNewChat}
         open={sidebarOpen}
         onToggle={() => setSidebarOpen((v) => !v)}

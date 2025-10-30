@@ -1,10 +1,16 @@
 import React, { useRef, useState, useEffect } from 'react';
-import { Image as Gallery, Mic, Send, X } from 'lucide-react';
+import { Image as Gallery, Mic, Send, X, FileText, Paperclip } from 'lucide-react';
+
+export interface FilePreview {
+  file: File;
+  preview: string;
+  type: 'image' | 'pdf';
+}
 
 interface ChatInputProps {
   value: string;
   onChange: (value: string) => void;
-  onSubmit: (e: React.FormEvent) => void;
+  onSubmit: (e: React.FormEvent, files: FilePreview[]) => void;
   onImageSelect: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onPdfSelect: (e: React.ChangeEvent<HTMLInputElement>) => void;
   recording: boolean;
@@ -26,9 +32,9 @@ export function ChatInput({
   const pdfInputRef = useRef<HTMLInputElement | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
   
-  // Image preview state
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  // Multiple files preview state
+  const [filePreviews, setFilePreviews] = useState<FilePreview[]>([]);
+  const MAX_FILES = 5;
 
   // Auto-resize textarea
   useEffect(() => {
@@ -38,34 +44,61 @@ export function ChatInput({
     }
   }, [value]);
 
-  // Handle image selection with preview
-  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setSelectedFile(file);
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreview(reader.result as string);
-      };
-      reader.readAsDataURL(file);
+  // Handle multiple file selection with preview
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>, fileType: 'image' | 'pdf') => {
+    const files = Array.from(e.target.files || []);
+    
+    // Check if adding these files would exceed the limit
+    if (filePreviews.length + files.length > MAX_FILES) {
+      alert(`You can only upload up to ${MAX_FILES} files at once`);
+      return;
     }
-    onImageSelect(e);
+
+    // Process each file
+    files.forEach((file) => {
+      if (fileType === 'image') {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          setFilePreviews((prev) => [
+            ...prev,
+            { file, preview: reader.result as string, type: 'image' },
+          ]);
+        };
+        reader.readAsDataURL(file);
+      } else {
+        // For PDFs, use a generic icon preview
+        setFilePreviews((prev) => [
+          ...prev,
+          { file, preview: '', type: 'pdf' },
+        ]);
+      }
+    });
+
+    // Call original handlers
+    if (fileType === 'image') {
+      onImageSelect(e);
+    } else {
+      onPdfSelect(e);
+    }
   };
 
-  // Remove image preview
-  const removeImage = () => {
-    setImagePreview(null);
-    setSelectedFile(null);
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
-    }
+  // Remove specific file from preview
+  const removeFile = (index: number) => {
+    setFilePreviews((prev) => prev.filter((_, i) => i !== index));
   };
 
-  // Handle form submit and clear preview
+  // Clear all files
+  const clearAllFiles = () => {
+    setFilePreviews([]);
+    if (fileInputRef.current) fileInputRef.current.value = '';
+    if (pdfInputRef.current) pdfInputRef.current.value = '';
+  };
+
+  // Handle form submit and clear previews
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmit(e);
-    removeImage();
+    onSubmit(e, filePreviews); // Pass files to parent
+    clearAllFiles();
   };
 
   return (
@@ -82,54 +115,78 @@ export function ChatInput({
           margin: '0 auto',
         }}
       >
-        {/* Image Preview */}
-        {imagePreview && (
-          <div className="mb-3 relative inline-block">
-            <div className="relative rounded-lg overflow-hidden border-2 border-[#404040]">
-              <img
-                src={imagePreview}
-                alt="Preview"
-                className="max-w-[200px] max-h-[200px] object-cover"
-              />
-              <button
-                type="button"
-                onClick={removeImage}
-                className="absolute top-1 right-1 bg-black/70 hover:bg-black/90 rounded-full p-1.5 transition"
-                title="Remove image"
-              >
-                <X size={16} color="#fff" />
-              </button>
-            </div>
+        {/* File Previews Gallery */}
+        {filePreviews.length > 0 && (
+          <div className="mb-3 flex flex-wrap gap-2">
+            {filePreviews.map((filePreview, index) => (
+              <div key={index} className="relative inline-block">
+                <div className="relative rounded-lg overflow-hidden border-2 border-[#404040] bg-[#2a2a2a]">
+                  {filePreview.type === 'image' ? (
+                    <img
+                      src={filePreview.preview}
+                      alt={`Preview ${index + 1}`}
+                      className="w-[70px] h-[70px] object-cover"
+                    />
+                  ) : (
+                    <div className="w-[70px] h-[70px] flex flex-col items-center justify-center bg-[#2a2a2a]">
+                      <FileText size={28} color="#888" />
+                      <span className="text-[10px] text-[#888] mt-1">PDF</span>
+                    </div>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => removeFile(index)}
+                    className="absolute -top-2 -right-2 bg-red-600 hover:bg-red-700 rounded-full p-1 transition shadow-md"
+                    title="Remove file"
+                  >
+                    <X size={14} color="#fff" />
+                  </button>
+                </div>
+              </div>
+            ))}
+            {filePreviews.length < MAX_FILES && (
+              <span className="text-xs text-[#888] self-end pb-2">
+                {MAX_FILES - filePreviews.length} more allowed
+              </span>
+            )}
           </div>
         )}
 
         {/* Input Container */}
         <div
-          className="flex items-end bg-[#303030] rounded-3xl px-3 py-2"
+          className="flex items-end bg-[#303030] rounded-full px-3 py-2"
           style={{
-            border: '2px solid #fff',
-            boxShadow: '0 0 0 2px #fff2',
+            border: '1px solid #505050ff',
+            boxShadow: '0 0 0 1px #fff2',
             minHeight: 56,
             transition: 'border 0.2s, box-shadow 0.2s',
             gap: 8,
           }}
         >
-          {/* Gallery/Image upload button */}
+          {/* File upload button (images + PDFs) */}
           <button
             type="button"
             onClick={() => fileInputRef.current?.click()}
             className="flex items-center justify-center w-10 h-10 rounded-full bg-transparent hover:bg-[#404040] transition focus:outline-none flex-shrink-0"
-            title="Upload image"
+            title="Upload files (images/PDFs)"
             tabIndex={0}
+            disabled={filePreviews.length >= MAX_FILES}
           >
-            <Gallery size={22} color="#fff" />
+            <Paperclip size={22} color={filePreviews.length >= MAX_FILES ? '#555' : '#fff'} />
           </button>
           <input
             type="file"
-            accept="image/*"
+            accept="image/*,.pdf"
+            multiple
             ref={fileInputRef}
             style={{ display: 'none' }}
-            onChange={handleImageSelect}
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              if (file) {
+                const isPdf = file.type === 'application/pdf';
+                handleFileSelect(e, isPdf ? 'pdf' : 'image');
+              }
+            }}
           />
 
           {/* Auto-expanding Textarea */}
@@ -159,7 +216,7 @@ export function ChatInput({
           />
 
           {/* Mic or Send button toggle */}
-          {value.trim() === '' && !recording && !imagePreview ? (
+          {value.trim() === '' && !recording && filePreviews.length === 0 ? (
             <button
               type="button"
               onClick={onStartRecording}

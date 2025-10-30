@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useMemo } from 'react';
 import { Search, Plus, AlignJustify } from 'lucide-react';
 import { Chat } from '@/types/chat';
 
@@ -19,6 +19,20 @@ export function ChatSidebar({
   open,
   onToggle,
 }: ChatSidebarProps) {
+  const [searchQuery, setSearchQuery] = useState('');
+
+  // Filter chats based on search query
+  const filteredChats = useMemo(() => {
+    if (!searchQuery.trim()) {
+      return chats;
+    }
+    
+    const query = searchQuery.toLowerCase();
+    return chats.filter((chat) => {
+      const title = (chat.title || `Chat ${chat.id}`).toLowerCase();
+      return title.includes(query);
+    });
+  }, [chats, searchQuery]);
   return (
     <aside
       className={`transition-all duration-200 shadow-lg h-full flex flex-col ${
@@ -86,6 +100,8 @@ export function ChatSidebar({
             <input
               type="text"
               placeholder="Search chats"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
               className="bg-transparent border-none outline-none text-[#bdbdbd] text-sm flex-1 font-normal"
               style={{ fontFamily: 'Inter, system-ui, sans-serif' }}
             />
@@ -111,23 +127,31 @@ export function ChatSidebar({
           className="flex-1 overflow-y-auto pl-4 pr-4 custom-scrollbar"
           style={{ minHeight: 0 }}
         >
-          {chats.map((chat) => (
-            <button
-              key={chat.id}
-              onClick={() => onSelectChat(chat.id)}
-              className={`w-full text-left px-4 py-2 my-1 rounded-lg transition font-normal text-white ${
-                selectedChat === chat.id ? 'bg-[#232323]' : 'hover:bg-[#181818]'
-              }`}
-              style={{
-                fontFamily: 'Inter, system-ui, sans-serif',
-                fontSize: '1rem',
-                fontWeight: 400,
-                borderRadius: 10,
-              }}
-            >
-              {chat.title || `Chat ${chat.id}`}
-            </button>
-          ))}
+          {filteredChats.length > 0 ? (
+            filteredChats.map((chat) => (
+              <button
+                key={chat.id}
+                onClick={() => onSelectChat(chat.id)}
+                className={`w-full text-left px-4 py-2 my-1 rounded-lg transition font-normal text-white ${
+                  selectedChat === chat.id ? 'bg-[#232323]' : 'hover:bg-[#181818]'
+                }`}
+                style={{
+                  fontFamily: 'Inter, system-ui, sans-serif',
+                  fontSize: '1rem',
+                  fontWeight: 400,
+                  borderRadius: 10,
+                }}
+              >
+                {chat.title || `Chat ${chat.id}`}
+              </button>
+            ))
+          ) : (
+            <div className="text-center py-8">
+              <p className="text-[#888] text-sm">
+                {searchQuery.trim() ? 'No chats found' : 'No chats yet'}
+              </p>
+            </div>
+          )}
         </div>
       )}
     </aside>
