@@ -2,7 +2,7 @@
 
 import React, { createContext, useState, useEffect, ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
-import { api } from '@/utils/api';
+import { api } from '@/lib/api';
 import { getToken, setToken as saveToken, removeToken } from '@/lib/auth';
 import { User, AuthState, LoginRequest, SignupRequest, AuthResponse } from '@/types';
 import { ROUTES } from '@/utils/constants';

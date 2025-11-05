@@ -72,3 +72,8 @@ class MessageOut(MessageBase):
 
     class Config:
         orm_mode = True
+
+
+class ChatBotResponse(BaseModel):
+    type: str  # 'ai_response' or 'user_interrupt'
+    response: str

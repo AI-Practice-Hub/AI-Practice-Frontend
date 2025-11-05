@@ -47,3 +47,8 @@ export interface WebSocketMessage {
   message?: string;
   error?: string;
 }
+
+export interface ChatBotResponse {
+  type: "ai_response" | "user_interrupt";
+  response: string;
+}

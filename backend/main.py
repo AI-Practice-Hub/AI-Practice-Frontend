@@ -21,7 +21,7 @@ app.add_middleware(
 
 app.include_router(user_router, prefix="/api/auth", tags=["auth"])
 app.include_router(chat_router, prefix="/api", tags=["chat"])
-app.include_router(ws_router, tags=["ws"])
+# app.include_router(ws_router, tags=["ws"])  # Commented out - replaced with REST API
 
 @app.get("/api/health")
 def health_check():

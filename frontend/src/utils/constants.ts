@@ -2,7 +2,6 @@
 
 // API Configuration
 export const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000/api';
-export const WS_BASE_URL = process.env.NEXT_PUBLIC_WS_BASE_URL || 'ws://localhost:8000';
 
 // File Upload Limits (in bytes)
 export const MAX_IMAGE_SIZE = 3 * 1024 * 1024; // 3MB
