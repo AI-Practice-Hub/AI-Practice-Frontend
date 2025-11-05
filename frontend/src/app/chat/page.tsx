@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import React, { useState, useRef, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -65,7 +65,7 @@ function ChatPageContent() {
         timestamp: new Date().toISOString(),
       });
     }
-  }, messages.length);
+  });
   
   // Audio recording
   const { recording, startRecording, stopRecording } = useAudioRecorder((blob, url) => {
@@ -76,16 +76,13 @@ function ChatPageContent() {
     }
     
     const fileName = `audio_${Date.now()}.webm`;
-    
-    // Create a File object from the blob
-    const audioFile = new File([blob], fileName, { type: 'audio/webm' });
-    
-    // Send audio via REST API
     sendMessage({
-      files: [audioFile]
+      type: "audio",
+      file_name: fileName,
+      file_size: blob.size,
+      duration: null,
     });
     
-    // Add user message to UI immediately (optimistic)
     addMessage({
       sender: "user",
       content: null,
@@ -131,7 +128,7 @@ function ChatPageContent() {
     
     let chatId = selectedChat;
     
-    // Convert files to attachments for UI display
+    // Convert files to attachments
     const attachments: MessageAttachment[] = files.map(f => ({
       type: f.type,
       name: f.file.name,
@@ -148,15 +145,20 @@ function ChatPageContent() {
         // Update URL with new chat ID
         router.push(`/chat?id=${chatId}`);
         
-        // Send message with files in a single call after chat is created
-        const actualFiles = files.map(f => f.file);
+        // Send message after chat is created
+        if (input.trim()) {
+          sendMessage({ type: "text", content: input });
+        }
         
-        sendMessage({ 
-          content: input.trim() || undefined,
-          files: actualFiles.length > 0 ? actualFiles : undefined
+        // Send file messages
+        files.forEach(file => {
+          sendMessage({
+            type: file.type,
+            file_name: file.file.name,
+            file_size: file.file.size
+          });
         });
         
-        // Add user message to UI immediately (optimistic)
         addMessage({
           sender: "user",
           content: input.trim() || null,
@@ -171,15 +173,20 @@ function ChatPageContent() {
       return;
     }
     
-    // Send message with files in a single REST API call
-    const actualFiles = files.map(f => f.file);
+    // Send message via WebSocket
+    if (input.trim()) {
+      sendMessage({ type: "text", content: input });
+    }
     
-    sendMessage({ 
-      content: input.trim() || undefined,
-      files: actualFiles.length > 0 ? actualFiles : undefined
+    // Send file messages
+    files.forEach(file => {
+      sendMessage({
+        type: file.type,
+        file_name: file.file.name,
+        file_size: file.file.size
+      });
     });
     
-    // Add user message to UI immediately (optimistic)
     addMessage({
       sender: "user",
       content: input.trim() || null,
@@ -190,26 +197,38 @@ function ChatPageContent() {
     setIsThinking(true); // Start thinking animation
   };
 
-  // Handle file/image/pdf upload (Legacy - now handled in handleSend)
+  // Handle file/image/pdf upload
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, type: "image" | "pdf") => {
-    // This function is now mostly for validation
-    // Actual file sending is handled in handleSend with the new REST API
     const file = e.target.files?.[0];
     if (!file) return;
     
     if (type === "image" && file.size > 3 * 1024 * 1024) {
       toast.error("Image file too large (max 3MB)");
-      e.target.value = ""; // Clear the input
       return;
     }
     if (type === "pdf" && file.size > 5 * 1024 * 1024) {
       toast.error("PDF file too large (max 5MB)");
-      e.target.value = ""; // Clear the input
       return;
     }
     
-    // File is valid - it will be handled by ChatInput component and passed to handleSend
-    // No need to send immediately anymore since we batch everything in handleSend
+    // Send file metadata via WebSocket
+    sendMessage({
+      type,
+      file_name: file.name,
+      file_size: file.size
+    });
+    
+    addMessage({
+      sender: "user",
+      content: null,
+      file_type: type,
+      file_name: file.name,
+      file_url: `/files/${file.name}`,
+      timestamp: new Date().toISOString()
+    });
+    
+    // Reset input value so same file can be selected again
+    e.target.value = "";
   };
 
   return (
