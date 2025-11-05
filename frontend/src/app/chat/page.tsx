@@ -65,7 +65,7 @@ function ChatPageContent() {
         timestamp: new Date().toISOString(),
       });
     }
-  });
+  }, messages.length);
   
   // Audio recording
   const { recording, startRecording, stopRecording } = useAudioRecorder((blob, url) => {
@@ -82,7 +82,6 @@ function ChatPageContent() {
     
     // Send audio via REST API
     sendMessage({
-      type: "audio",
       files: [audioFile]
     });
     
@@ -150,11 +149,9 @@ function ChatPageContent() {
         router.push(`/chat?id=${chatId}`);
         
         // Send message with files in a single call after chat is created
-        const messageType = files.length > 0 ? files[0].type : "text";
         const actualFiles = files.map(f => f.file);
         
         sendMessage({ 
-          type: messageType, 
           content: input.trim() || undefined,
           files: actualFiles.length > 0 ? actualFiles : undefined
         });
@@ -175,11 +172,9 @@ function ChatPageContent() {
     }
     
     // Send message with files in a single REST API call
-    const messageType = files.length > 0 ? files[0].type : "text";
     const actualFiles = files.map(f => f.file);
     
     sendMessage({ 
-      type: messageType, 
       content: input.trim() || undefined,
       files: actualFiles.length > 0 ? actualFiles : undefined
     });

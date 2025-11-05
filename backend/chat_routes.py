@@ -32,9 +32,7 @@ def get_gemini_response(user_query: str) -> str:
 
 def determine_response_type(content: str, website_url: str, files: List[UploadFile]) -> str:
     """Determine the type of response based on content and inputs"""
-    if website_url and content and ("test" in content.lower() or "automate" in content.lower()):
-        return "user_interrupt"
-    elif files and len(files) > 0 and content and "automation" in content.lower():
+    if files and len(files) > 0 and content and "automation" in content.lower():
         return "user_interrupt"  
     else:
         return "ai_response"
@@ -72,12 +70,11 @@ def post_message(chat_id: int, message: MessageCreate, db: Session = Depends(get
 
 
 @router.post("/chat/{chat_id}/send-message", response_model=ChatBotResponse)
-async def send_chat_message(
+async def send_message(
     chat_id: int,
-    message_type: str = Form(...),
-    content: str = Form(None),
-    website_url: str = Form(None),
-    upload_files: List[UploadFile] = File(None),
+    invoke_type: str = Query(..., description="Type of message: new, resume"),
+    content: str = Form(None, description="Text content of the message"),
+    files: List[UploadFile] = File(None, description="Optional file upload"),
     db: Session = Depends(get_db),
     user_id: int = Depends(get_current_user_id)
 ):
@@ -92,9 +89,24 @@ async def send_chat_message(
     
     # Handle file uploads
     file_names = []
-    if upload_files:
-        upload_files = [f for f in upload_files if f.filename]  # Filter out empty files
-        file_names = [f.filename for f in upload_files]
+    if files:
+        files = [f for f in files if f.filename]  # Filter out empty files
+        file_names = [f.filename for f in files]
+    
+    # Determine message type based on content and files
+    if files and len(files) > 0:
+        # Determine file type from first file extension
+        first_file = files[0].filename.lower()
+        if first_file.endswith(('.png', '.jpg', '.jpeg', '.gif', '.webp')):
+            message_type = "image"
+        elif first_file.endswith('.pdf'):
+            message_type = "pdf"
+        elif first_file.endswith(('.webm', '.mp3', '.wav', '.m4a')):
+            message_type = "audio"
+        else:
+            message_type = "file"  # Generic file type
+    else:
+        message_type = "text"
     
     # Store user message in database
     user_msg = Message(
@@ -110,14 +122,12 @@ async def send_chat_message(
     db.commit()
     db.refresh(user_msg)
     
-    # Determine response type based on inputs
-    response_type = determine_response_type(content or "", website_url or "", upload_files or [])
+    # Determine response type based on inputs (simplified since no website_url)
+    response_type = determine_response_type(content or "", "", files or [])
     
     # Generate appropriate response
     if response_type == "user_interrupt":
-        if website_url:
-            bot_content = f"Do you want me to test the website: {website_url}?"
-        elif file_names:
+        if file_names:
             bot_content = f"Do you want me to process these files: {', '.join(file_names)}?"
         else:
             bot_content = "Do you want to proceed with this automation task?"

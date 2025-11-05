@@ -2,13 +2,14 @@ import { useRef, useCallback } from 'react';
 import { api } from '@/lib/api';
 
 export interface WebSocketMessage {
-  type: 'text' | 'image' | 'pdf' | 'audio';
+  type?: 'text' | 'image' | 'pdf' | 'audio'; // Optional since backend determines it
   content?: string;
   file_name?: string;
   file_size?: number;
   file_url?: string;
   duration?: number | null;
   files?: File[]; // Add support for actual file objects
+  invokeType?: 'new' | 'resume'; // Add invoke type
 }
 
 export interface UseWebSocketReturn {
@@ -24,7 +25,8 @@ export interface ChatBotResponse {
 
 export function useWebSocket(
   chatId: number | null,
-  onMessage?: (data: any) => void
+  onMessage?: (data: any) => void,
+  messagesCount?: number // Add messages count to determine invoke_type
 ): UseWebSocketReturn {
   // Store the callback in a ref to avoid issues
   const onMessageRef = useRef(onMessage);
@@ -37,9 +39,11 @@ export function useWebSocket(
     }
 
     try {
+      // Determine invoke_type based on messages count
+      const invokeType = (messagesCount === 0) ? 'new' : 'resume';
+      
       // Prepare FormData for the REST API call
       const formData = new FormData();
-      formData.append('message_type', message.type);
       
       if (message.content) {
         formData.append('content', message.content);
@@ -48,24 +52,20 @@ export function useWebSocket(
       // Handle file uploads
       if (message.files && message.files.length > 0) {
         message.files.forEach((file) => {
-          formData.append('upload_files', file);
+          formData.append('files', file);
         });
       }
-      
-      // For backward compatibility with existing file_name/file_size approach
-      if (message.file_name && !message.files) {
-        formData.append('file_name', message.file_name);
-        if (message.file_size) {
-          formData.append('file_size', message.file_size.toString());
-        }
-      }
 
-      // Call the new REST API endpoint
-      const response = await api.post(`/chat/${chatId}/send-message`, formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      });
+      // Call the new REST API endpoint with invoke_type as query parameter
+      const response = await api.post(
+        `/chat/${chatId}/send-message?invoke_type=${invokeType}`, 
+        formData, 
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        }
+      );
 
       const botResponse: ChatBotResponse = response.data;
 
@@ -86,7 +86,7 @@ export function useWebSocket(
         });
       }
     }
-  }, [chatId]);
+  }, [chatId, messagesCount]);
 
   return {
     ws: null, // No WebSocket needed
