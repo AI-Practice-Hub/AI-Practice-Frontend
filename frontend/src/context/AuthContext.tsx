@@ -61,7 +61,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const signup = async (credentials: SignupRequest) => {
     try {
-      await api.post('c/signup', credentials);
+      await api.post('/signup', credentials);
       // After successful signup, redirect to login
       router.push(ROUTES.LOGIN);
     } catch (error: any) {
