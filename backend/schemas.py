@@ -58,6 +58,7 @@ class MessageBase(BaseModel):
     file_type: Optional[str] = None
     file_name: Optional[str] = None
     file_url: Optional[str] = None
+    invoke_type: Optional[str] = None
 
 
 class MessageCreate(MessageBase):
