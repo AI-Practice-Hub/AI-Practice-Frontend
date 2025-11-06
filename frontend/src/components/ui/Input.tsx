@@ -1,50 +1,22 @@
-import React from 'react';
+import * as React from "react"
 
-interface InputProps {
-  type?: string;
-  placeholder?: string;
-  value: string;
-  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  required?: boolean;
-  error?: string;
-  className?: string;
-}
+import { cn } from "@/lib/utils"
 
-export function Input({
-  type = 'text',
-  placeholder,
-  value,
-  onChange,
-  required = false,
-  error,
-  className = '',
-}: InputProps) {
-  return (
-    <div className="w-full">
+const Input = React.forwardRef<HTMLInputElement, React.ComponentProps<"input">>(
+  ({ className, type, ...props }, ref) => {
+    return (
       <input
         type={type}
-        placeholder={placeholder}
-        value={value}
-        onChange={onChange}
-        required={required}
-        className={`
-          w-full px-4 py-3 rounded-md border 
-          bg-zinc-100 dark:bg-zinc-800 
-          text-zinc-900 dark:text-zinc-100
-          focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-purple-500
-          transition-all
-          ${error 
-            ? 'border-red-500 dark:border-red-400' 
-            : 'border-zinc-300 dark:border-zinc-700'
-          }
-          ${className}
-        `}
+        className={cn(
+          "flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm",
+          className
+        )}
+        ref={ref}
+        {...props}
       />
-      {error && (
-        <p className="mt-1 text-sm text-red-500 dark:text-red-400">
-          {error}
-        </p>
-      )}
-    </div>
-  );
-}
+    )
+  }
+)
+Input.displayName = "Input"
+
+export { Input }

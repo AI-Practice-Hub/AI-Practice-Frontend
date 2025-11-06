@@ -4,6 +4,7 @@ import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { FileText, Image as ImageIcon, Copy, Download, Check } from 'lucide-react';
 import { Message } from '@/types/chat';
+import { Button } from '@/components/ui/Button';
 
 interface ChatMessageProps {
   message: Message;
@@ -34,25 +35,25 @@ function CodeBlock({ language, children }: { language: string; children: string 
   return (
     <div style={{ position: 'relative', margin: '0.75rem 0' }} className="sm:my-4">
       {/* Action Buttons */}
-      <div
-        className="absolute top-2 right-2 flex gap-1 sm:gap-1.5 z-10"
-      >
-        <button
+      <div className="absolute top-2 right-2 flex gap-1 sm:gap-1.5 z-10">
+        <Button
+          variant="secondary"
+          size="sm"
           onClick={handleCopy}
-          className="flex items-center gap-1 sm:gap-1.5 px-1.5 py-1 sm:px-2.5 sm:py-1.5 rounded-md bg-[#1a1a1a] hover:bg-[#252525] transition text-[#e6e6e6] text-[10px] sm:text-xs border border-[#333]"
-          title="Copy code"
+          className="h-7 px-2 text-xs bg-card hover:bg-card/80 border border-border"
         >
           {copied ? <Check size={12} className="sm:w-3.5 sm:h-3.5" /> : <Copy size={12} className="sm:w-3.5 sm:h-3.5" />}
-          <span className="hidden sm:inline">{copied ? 'Copied!' : 'Copy'}</span>
-        </button>
-        <button
+          <span className="hidden sm:inline ml-1">{copied ? 'Copied!' : 'Copy'}</span>
+        </Button>
+        <Button
+          variant="secondary"
+          size="sm"
           onClick={handleDownload}
-          className="flex items-center gap-1 sm:gap-1.5 px-1.5 py-1 sm:px-2.5 sm:py-1.5 rounded-md bg-[#1a1a1a] hover:bg-[#252525] transition text-[#e6e6e6] text-[10px] sm:text-xs border border-[#333]"
-          title="Download code"
+          className="h-7 px-2 text-xs bg-card hover:bg-card/80 border border-border"
         >
           <Download size={12} className="sm:w-3.5 sm:h-3.5" />
-          <span className="hidden sm:inline">Download</span>
-        </button>
+          <span className="hidden sm:inline ml-1">Download</span>
+        </Button>
       </div>
 
       {/* Code Syntax Highlighter */}
@@ -93,7 +94,7 @@ export function ChatMessage({ message }: ChatMessageProps) {
               {message.attachments.map((attachment, index) => (
                 <div
                   key={index}
-                  className="relative rounded-lg overflow-hidden border border-[#404040] bg-[#2a2a2a]"
+                  className="relative rounded-lg overflow-hidden border-2 border-border bg-muted"
                 >
                   {attachment.type === 'image' ? (
                     <img
@@ -103,9 +104,9 @@ export function ChatMessage({ message }: ChatMessageProps) {
                       onClick={() => window.open(attachment.url, '_blank')}
                     />
                   ) : (
-                    <div className="w-[80px] h-[80px] sm:w-[100px] sm:h-[100px] flex flex-col items-center justify-center bg-[#2a2a2a] cursor-pointer hover:bg-[#333] transition">
-                      <FileText size={28} className="sm:w-8 sm:h-8" color="#888" />
-                      <span className="text-[9px] sm:text-[10px] text-[#888] mt-1 sm:mt-2 px-1 sm:px-2 text-center truncate w-full">
+                    <div className="w-[80px] h-[80px] sm:w-[100px] sm:h-[100px] flex flex-col items-center justify-center bg-muted cursor-pointer hover:bg-muted/80 transition">
+                      <FileText size={28} className="sm:w-8 sm:h-8 text-muted-foreground" />
+                      <span className="text-[9px] sm:text-[10px] text-muted-foreground mt-1 sm:mt-2 px-1 sm:px-2 text-center truncate w-full">
                         {attachment.name}
                       </span>
                     </div>
@@ -117,15 +118,7 @@ export function ChatMessage({ message }: ChatMessageProps) {
           
           {/* Message content */}
           {message.content && (
-            <div
-              className="px-3 py-2 sm:px-4 rounded-xl break-words whitespace-pre-wrap bg-[#303030] text-white text-sm sm:text-base"
-              style={{
-                fontWeight: 400,
-                boxShadow: '0 2px 8px 0 #0002',
-                wordBreak: 'break-word',
-                overflowWrap: 'anywhere',
-              }}
-            >
+            <div className="px-3 py-2 sm:px-4 rounded-xl break-words whitespace-pre-wrap bg-primary text-primary-foreground text-sm sm:text-base shadow-sm">
               {message.content}
             </div>
           )}
@@ -133,7 +126,7 @@ export function ChatMessage({ message }: ChatMessageProps) {
       ) : (
         // Bot message with markdown (ChatGPT style - no background for text)
         <div
-          className="w-full max-w-full overflow-hidden text-[#ededed] text-sm sm:text-base"
+          className="w-full max-w-full overflow-hidden text-foreground text-sm sm:text-base"
           style={{
             fontFamily: 'Inter, system-ui, sans-serif',
             fontWeight: 400,
@@ -165,11 +158,11 @@ export function ChatMessage({ message }: ChatMessageProps) {
                   <code
                     className={className}
                     style={{
-                      background: '#2d2d2d',
+                      background: 'hsl(var(--muted))',
                       borderRadius: 4,
                       padding: '2px 6px',
                       fontSize: '0.9em',
-                      color: '#e6e6e6',
+                      color: 'hsl(var(--muted-foreground))',
                       wordBreak: 'break-word',
                       overflowWrap: 'anywhere',
                     }}

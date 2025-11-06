@@ -1,33 +1,51 @@
 import React from 'react';
 import { Menu } from 'lucide-react';
+import { Button } from '@/components/ui/Button';
+import { UserMenu } from '@/components/ui/UserMenu';
 
 interface ChatHeaderProps {
   title?: string;
   onMenuClick?: () => void;
+  user?: {
+    name: string;
+    email: string;
+    avatar?: string;
+  };
+  onLogout?: () => void;
+  onSettings?: () => void;
 }
 
-export function ChatHeader({ title = 'AI Practice Hub', onMenuClick }: ChatHeaderProps) {
+export function ChatHeader({
+  title = 'Chat2Test',
+  onMenuClick,
+  user,
+  onLogout,
+  onSettings
+}: ChatHeaderProps) {
   return (
-    <nav
-      className="flex items-center justify-between px-4 sm:px-6 md:px-8 py-3 md:py-4"
-      style={{ backgroundColor: '#212121', borderBottom: '1px solid #505050ff' }}
-    >
+    <nav className="flex items-center justify-between px-4 sm:px-6 md:px-8 py-3 bg-card border-b border-border">
       {/* Mobile Menu Button */}
       {onMenuClick && (
-        <button
+        <Button
+          variant="ghost"
+          size="icon"
           onClick={onMenuClick}
-          className="md:hidden text-white mr-3 p-2 hover:bg-[#2a2a2a] rounded-lg transition"
+          className="md:hidden mr-3"
           aria-label="Toggle menu"
         >
           <Menu size={24} />
-        </button>
+        </Button>
       )}
-      
-      <span className="text-xl sm:text-2xl font-bold truncate" style={{ color: '#fff' }}>
+
+      <span className="text-xl sm:text-2xl font-bold truncate text-foreground">
         {title}
       </span>
       <div className="flex items-center gap-2 sm:gap-4">
-        {/* Add user/profile/settings here */}
+        <UserMenu
+          user={user}
+          onLogout={onLogout}
+          onSettings={onSettings}
+        />
       </div>
     </nav>
   );

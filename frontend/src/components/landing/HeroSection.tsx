@@ -1,10 +1,19 @@
 import Link from "next/link";
+import { Button } from "@/components/ui/Button";
 
 export function HeroSection() {
   return (
     <section className="container mx-auto px-6 py-20 text-center">
       <div className="max-w-4xl mx-auto">
-        <h1 className="text-5xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+        <h1
+          className="text-5xl md:text-6xl font-bold mb-6"
+          style={{
+            background: 'linear-gradient(135deg, hsl(211 100% 43%), hsl(199 89% 48%))',
+            backgroundClip: 'text',
+            WebkitBackgroundClip: 'text',
+            color: 'transparent'
+          }}
+        >
           Test Your Web Apps Automatically,
           <br />
           In Your Own Language
@@ -14,15 +23,14 @@ export function HeroSection() {
           and automatically generates comprehensive test suites for your web applications.
         </p>
         <div className="flex gap-4 justify-center">
-          <Link
-            href="/chat"
-            className="gradient-primary text-white px-8 py-4 rounded-lg shadow-elegant hover:shadow-glow transition-smooth text-lg"
-          >
-            Start Testing Now
-          </Link>
-          <button className="text-lg px-8 py-4 rounded-lg border border-input bg-background hover:bg-accent hover:text-accent-foreground transition-smooth">
+          <Button asChild size="lg">
+            <Link href="/chat">
+              Start Testing Now
+            </Link>
+          </Button>
+          <Button variant="outline" size="lg">
             Watch Demo
-          </button>
+          </Button>
         </div>
       </div>
     </section>

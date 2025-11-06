@@ -49,7 +49,7 @@ export default function LoginPage() {
         onChange={(e) => setPassword(e.target.value)}
         required
       />
-      <Button type="submit" disabled={loading} loading={loading}>
+      <Button type="submit" disabled={loading}>
         {loading ? "Logging in..." : "Login"}
       </Button>
     </AuthForm>

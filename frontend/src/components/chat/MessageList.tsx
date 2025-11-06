@@ -16,7 +16,7 @@ export function MessageList({ messages, chatEndRef, isThinking = false }: Messag
         className="w-full flex-1 flex flex-col justify-center items-center select-none px-4"
       >
         <h1
-          className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-semibold text-white text-center"
+          className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-semibold text-foreground text-center"
           style={{
             fontFamily: 'Inter, system-ui, sans-serif',
             opacity: 0.9,
@@ -26,7 +26,7 @@ export function MessageList({ messages, chatEndRef, isThinking = false }: Messag
           Welcome to AI Practice Hub
         </h1>
         <p
-          className="text-base sm:text-lg md:text-xl text-[#bdbdbd] mt-2 text-center"
+          className="text-base sm:text-lg md:text-xl text-muted-foreground mt-2 text-center"
           style={{
             fontFamily: 'Inter, system-ui, sans-serif',
             fontWeight: 400,

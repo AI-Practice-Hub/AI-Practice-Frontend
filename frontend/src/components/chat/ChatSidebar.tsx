@@ -1,6 +1,8 @@
 import React, { useState, useMemo } from 'react';
 import { Search, Plus, AlignJustify } from 'lucide-react';
 import { Chat } from '@/types/chat';
+import { Button } from '@/components/ui/Button';
+import { Input } from '@/components/ui/Input';
 
 interface ChatSidebarProps {
   chats: Chat[];
@@ -37,79 +39,74 @@ export function ChatSidebar({
   return (
     <aside
       className={`
-        transition-all duration-200 shadow-lg h-full flex flex-col
+        transition-all duration-200 shadow-lg h-full flex flex-col bg-sidebar
         md:relative fixed inset-y-0 left-0 z-50
         ${open ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
         ${open ? 'w-64' : 'w-0 md:w-16'}
         min-w-0 md:min-w-[4rem]
+        border-r border-sidebar-border
       `}
-      style={{
-        backgroundColor: '#171717',
-        paddingTop: '0.5rem',
-        paddingBottom: '1.25rem',
-        borderRight: `${open ? 'none' : '1px solid #505050ff'}`
-      }}
     >
       {/* Header */}
-      <div
-        className="flex items-center gap-2 pl-4 pr-2 pt-2 pb-2 min-h-[3.5rem]"
-        style={{ borderBottom: 'none' }}
-      >
+      <div className="flex items-center gap-2 pl-4 pr-2 pt-2 pb-2 min-h-[3.5rem] border-b border-sidebar-border">
         {open ? (
           <>
-            <span className="font-bold text-lg flex-1" style={{ color: '#fff' }}>
+            <span className="font-bold text-lg flex-1 text-sidebar-foreground">
               Chats
             </span>
-            <button
+            <Button
+              variant="ghost"
+              size="icon"
               onClick={onToggle}
-              className="text-2xl"
-              style={{ color: '#fff' }}
+              className="text-sidebar-foreground hover:bg-sidebar-accent"
             >
               <AlignJustify size={24} />
-            </button>
+            </Button>
           </>
         ) : (
-          <button
+          <Button
+            variant="ghost"
+            size="icon"
             onClick={onToggle}
-            className="mx-auto text-2xl w-full flex items-center justify-center"
-            style={{ color: '#fff' }}
+            className="mx-auto w-full text-sidebar-foreground hover:bg-sidebar-accent"
           >
             <AlignJustify size={24} />
-          </button>
+          </Button>
         )}
       </div>
 
       {/* New Chat Button - Hidden on mobile, shown on tablet+ */}
       {open ? (
-        <button
+        <Button
           onClick={onNewChat}
-          className="hidden md:flex items-center gap-2 pl-3 pr-3 py-2 mt-1 mb-2 rounded-lg bg-[#232323] hover:bg-[#292929] text-white font-semibold transition shadow-none border border-[#232323] w-[90%] mx-auto h-11 min-h-[44px]"
+          className="hidden md:flex items-center gap-2 mt-1 mb-2 w-[90%] mx-auto h-11 bg-sidebar-accent hover:bg-sidebar-accent/80 text-sidebar-accent-foreground"
         >
           <Plus size={18} />
           <span>New chat</span>
-        </button>
+        </Button>
       ) : (
-        <button
+        <Button
           onClick={onNewChat}
-          className="hidden md:flex items-center justify-center mx-auto mt-8 mb-2 w-10 h-10 rounded-full bg-[#232323] hover:bg-[#292929] text-white transition shadow-none border border-[#232323]"
+          variant="ghost"
+          size="icon"
+          className="hidden md:flex items-center justify-center mx-auto mt-8 mb-2 w-10 h-10 text-sidebar-foreground hover:bg-sidebar-accent"
           title="New chat"
         >
           <Plus size={20} />
-        </button>
+        </Button>
       )}
 
       {/* Search Input */}
       {open && (
-        <div className="pl-4 pr-4 mb-2">
-          <div className="flex items-center bg-[#181818] rounded-lg px-3 py-2 border border-[#232323]">
-            <Search size={16} className="text-[#bdbdbd] mr-2" />
-            <input
+        <div className="px-4 mb-2">
+          <div className="relative">
+            <Search size={16} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
+            <Input
               type="text"
               placeholder="Search chats"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="bg-transparent border-none outline-none text-[#bdbdbd] text-sm flex-1 font-normal"
-              style={{ fontFamily: 'Inter, system-ui, sans-serif' }}
+              className="pl-10 bg-sidebar-accent border-sidebar-border text-sidebar-foreground placeholder:text-muted-foreground"
             />
           </div>
         </div>
@@ -117,11 +114,8 @@ export function ChatSidebar({
 
       {/* Chats Label */}
       {open && (
-        <div className="pl-4 pr-4 pt-2 pb-1">
-          <span
-            className="text-xs uppercase tracking-widest text-[#bdbdbd] font-semibold select-none"
-            style={{ letterSpacing: '0.08em' }}
-          >
+        <div className="px-4 pt-2 pb-1">
+          <span className="text-xs uppercase tracking-widest text-muted-foreground font-semibold select-none">
             Chats
           </span>
         </div>
@@ -129,31 +123,23 @@ export function ChatSidebar({
 
       {/* Chat List */}
       {open && (
-        <div
-          className="flex-1 overflow-y-auto pl-4 pr-4 custom-scrollbar"
-          style={{ minHeight: 0 }}
-        >
+        <div className="flex-1 overflow-y-auto px-4 custom-scrollbar" style={{ minHeight: 0 }}>
           {filteredChats.length > 0 ? (
             filteredChats.map((chat) => (
-              <button
+              <Button
                 key={chat.id}
+                variant="ghost"
                 onClick={() => onSelectChat(chat.id)}
-                className={`w-full text-left px-4 py-2 my-1 rounded-lg transition font-normal text-white ${
-                  selectedChat === chat.id ? 'bg-[#232323]' : 'hover:bg-[#181818]'
+                className={`w-full justify-start text-left px-4 py-2 my-1 font-normal text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground ${
+                  selectedChat === chat.id ? 'bg-sidebar-accent text-sidebar-accent-foreground' : ''
                 }`}
-                style={{
-                  fontFamily: 'Inter, system-ui, sans-serif',
-                  fontSize: '1rem',
-                  fontWeight: 400,
-                  borderRadius: 10,
-                }}
               >
                 {chat.title || `Chat ${chat.id}`}
-              </button>
+              </Button>
             ))
           ) : (
             <div className="text-center py-8">
-              <p className="text-[#888] text-sm">
+              <p className="text-muted-foreground text-sm">
                 {searchQuery.trim() ? 'No chats found' : 'No chats yet'}
               </p>
             </div>

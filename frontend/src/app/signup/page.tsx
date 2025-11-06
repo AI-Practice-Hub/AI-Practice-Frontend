@@ -49,7 +49,7 @@ export default function SignupPage() {
         onChange={(e) => setPassword(e.target.value)}
         required
       />
-      <Button type="submit" disabled={loading} loading={loading}>
+      <Button type="submit" disabled={loading}>
         {loading ? "Signing up..." : "Sign Up"}
       </Button>
     </AuthForm>

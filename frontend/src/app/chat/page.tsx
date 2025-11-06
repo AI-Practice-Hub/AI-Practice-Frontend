@@ -234,8 +234,8 @@ function ChatPageContent() {
 
   return (
     <div
-      className="flex h-screen min-h-0 relative"
-      style={{ backgroundColor: '#212121', fontFamily: 'Inter, system-ui, sans-serif' }}
+      className="flex h-screen min-h-0 relative bg-background"
+      style={{ fontFamily: 'Inter, system-ui, sans-serif' }}
     >
       {/* Mobile Sidebar Overlay */}
       {sidebarOpen && (
