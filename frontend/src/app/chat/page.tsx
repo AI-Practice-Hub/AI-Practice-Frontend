@@ -62,10 +62,11 @@ function ChatPageContent() {
       addMessage({
         sender: "bot",
         content: data.message,
+        invoke_type: data.type, // Store invoke_type
         timestamp: new Date().toISOString(),
       });
     }
-  });
+  }, messages);
   
   // Audio recording
   const { recording, startRecording, stopRecording } = useAudioRecorder((blob, url) => {

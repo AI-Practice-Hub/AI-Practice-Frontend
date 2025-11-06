@@ -1,5 +1,6 @@
 import { useRef, useCallback } from 'react';
 import { api } from '@/lib/api';
+import { Message } from '@/types/chat';
 
 export interface WebSocketMessage {
   type?: 'text' | 'image' | 'pdf' | 'audio'; // Optional since backend determines it
@@ -26,7 +27,7 @@ export interface ChatBotResponse {
 export function useWebSocket(
   chatId: number | null,
   onMessage?: (data: any) => void,
-  messagesCount?: number // Add messages count to determine invoke_type
+  messages: Message[] = [] // Accept messages array to determine invoke_type
 ): UseWebSocketReturn {
   // Store the callback in a ref to avoid issues
   const onMessageRef = useRef(onMessage);
@@ -39,8 +40,9 @@ export function useWebSocket(
     }
 
     try {
-      // Determine invoke_type based on messages count
-      const invokeType = (messagesCount === 0) ? 'new' : 'resume';
+      // Determine invoke_type based on last message's invoke_type
+      const lastMessage = messages[messages.length - 1];
+      const invokeType = lastMessage?.invoke_type === 'user_interrupt' ? 'resume' : 'new';
       
       // Prepare FormData for the REST API call
       const formData = new FormData();
@@ -67,14 +69,18 @@ export function useWebSocket(
         }
       );
 
-      const botResponse: ChatBotResponse = response.data;
+      const messageArray: Message[] = response.data;
 
       // Simulate the same WebSocket callback behavior
-      if (onMessageRef.current) {
-        onMessageRef.current({
-          message: botResponse.response,
-          type: botResponse.type, // For future use (user_interrupt, etc.)
-        });
+      if (onMessageRef.current && messageArray.length > 0) {
+        // For backward compatibility, send the bot message (last in array)
+        const botMessage = messageArray.find(msg => msg.sender === 'bot');
+        if (botMessage) {
+          onMessageRef.current({
+            message: botMessage.content,
+            type: botMessage.invoke_type, // Use invoke_type instead of type
+          });
+        }
       }
     } catch (error) {
       console.error('Failed to send message:', error);
@@ -86,7 +92,7 @@ export function useWebSocket(
         });
       }
     }
-  }, [chatId, messagesCount]);
+  }, [chatId, messages]);
 
   return {
     ws: null, // No WebSocket needed

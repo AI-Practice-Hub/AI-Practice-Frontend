@@ -19,6 +19,7 @@ export interface Message {
   file_type?: MessageType;
   file_name?: string;
   file_url?: string;
+  invoke_type?: string;
   attachments?: MessageAttachment[]; // Support multiple attachments
   timestamp: string;
 }

@@ -55,7 +55,24 @@ def get_messages(chat_id: int, db: Session = Depends(get_db), user_id: int = Dep
     chat = db.query(Chat).filter(Chat.id == chat_id, Chat.user_id == user_id).first()
     if not chat:
         raise HTTPException(status_code=404, detail="Chat not found")
-    return db.query(Message).filter(Message.chat_id == chat_id).order_by(Message.timestamp).all()
+    
+    messages = db.query(Message).filter(Message.chat_id == chat_id).order_by(Message.timestamp).all()
+    
+    # Convert to MessageOut with invoke_type (null for existing messages)
+    return [
+        MessageOut(
+            id=msg.id,
+            chat_id=msg.chat_id,
+            sender=msg.sender,
+            content=msg.content,
+            file_type=msg.file_type,
+            file_name=msg.file_name,
+            file_url=msg.file_url,
+            invoke_type=None,  # Existing messages don't have invoke_type
+            timestamp=msg.timestamp
+        )
+        for msg in messages
+    ]
 
 @router.post("/chat/{chat_id}/message", response_model=MessageOut)
 def post_message(chat_id: int, message: MessageCreate, db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
@@ -69,7 +86,7 @@ def post_message(chat_id: int, message: MessageCreate, db: Session = Depends(get
     return new_message
 
 
-@router.post("/chat/{chat_id}/send-message", response_model=ChatBotResponse)
+@router.post("/chat/{chat_id}/send-message", response_model=List[MessageOut])
 async def send_message(
     chat_id: int,
     invoke_type: str = Query(..., description="Type of message: new, resume"),
@@ -149,8 +166,25 @@ async def send_message(
     db.commit()
     db.refresh(bot_msg)
     
-    # Return response in the required format
-    return ChatBotResponse(
-        type=response_type,
-        response=bot_content
-    )
+    # Return messages with invoke_type
+    return [
+        MessageOut(
+            id=user_msg.id,
+            chat_id=user_msg.chat_id,
+            sender=user_msg.sender,
+            content=user_msg.content,
+            file_type=user_msg.file_type,
+            file_name=user_msg.file_name,
+            file_url=user_msg.file_url,
+            invoke_type=invoke_type,
+            timestamp=user_msg.timestamp
+        ),
+        MessageOut(
+            id=bot_msg.id,
+            chat_id=bot_msg.chat_id,
+            sender=bot_msg.sender,
+            content=bot_msg.content,
+            invoke_type=response_type,  # Use response_type as invoke_type for bot messages
+            timestamp=bot_msg.timestamp
+        )
+    ]
