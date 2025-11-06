@@ -69,18 +69,14 @@ export function useWebSocket(
         }
       );
 
-      const messageArray: Message[] = response.data;
+      const messageResponse: Message = response.data;
 
       // Simulate the same WebSocket callback behavior
-      if (onMessageRef.current && messageArray.length > 0) {
-        // For backward compatibility, send the bot message (last in array)
-        const botMessage = messageArray.find(msg => msg.sender === 'bot');
-        if (botMessage) {
-          onMessageRef.current({
-            message: botMessage.content,
-            type: botMessage.invoke_type, // Use invoke_type instead of type
-          });
-        }
+      if (onMessageRef.current) {
+        onMessageRef.current({
+          message: messageResponse.content,
+          type: messageResponse.invoke_type, // Use invoke_type from the response
+        });
       }
     } catch (error) {
       console.error('Failed to send message:', error);

@@ -86,7 +86,7 @@ def post_message(chat_id: int, message: MessageCreate, db: Session = Depends(get
     return new_message
 
 
-@router.post("/chat/{chat_id}/send-message", response_model=List[MessageOut])
+@router.post("/chat/{chat_id}/send-message", response_model=MessageOut)
 async def send_message(
     chat_id: int,
     invoke_type: str = Query(..., description="Type of message: new, resume"),
@@ -166,25 +166,12 @@ async def send_message(
     db.commit()
     db.refresh(bot_msg)
     
-    # Return messages with invoke_type
-    return [
-        MessageOut(
-            id=user_msg.id,
-            chat_id=user_msg.chat_id,
-            sender=user_msg.sender,
-            content=user_msg.content,
-            file_type=user_msg.file_type,
-            file_name=user_msg.file_name,
-            file_url=user_msg.file_url,
-            invoke_type=invoke_type,
-            timestamp=user_msg.timestamp
-        ),
-        MessageOut(
-            id=bot_msg.id,
-            chat_id=bot_msg.chat_id,
-            sender=bot_msg.sender,
-            content=bot_msg.content,
-            invoke_type=response_type,  # Use response_type as invoke_type for bot messages
-            timestamp=bot_msg.timestamp
-        )
-    ]
+    # Return bot message with invoke_type
+    return MessageOut(
+        id=bot_msg.id,
+        chat_id=bot_msg.chat_id,
+        sender=bot_msg.sender,
+        content=bot_msg.content,
+        invoke_type=response_type,  # Use response_type as invoke_type for bot messages
+        timestamp=bot_msg.timestamp
+    )

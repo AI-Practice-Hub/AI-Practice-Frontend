@@ -62,7 +62,7 @@ function ChatPageContent() {
       addMessage({
         sender: "bot",
         content: data.message,
-        invoke_type: data.type, // Store invoke_type
+        invoke_type: data.type, // Store invoke_type from response
         timestamp: new Date().toISOString(),
       });
     }
