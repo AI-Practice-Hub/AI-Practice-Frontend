@@ -19,10 +19,13 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(user_router, prefix="/api/auth", tags=["auth"])
-app.include_router(chat_router, prefix="/api", tags=["chat"])
+@app.get("/", tags=["health"])
+async def root():
+    return {"status": "healthy", "service": "Spec2Test API"}
+
+subapi = FastAPI(title="Test Request Test API", version="0.1")
+subapi.include_router(user_router, tags=["Auth"])
+subapi.include_router(chat_router, tags=["Chat"])
+app.mount("/Chat2Test/v1", subapi)
 # app.include_router(ws_router, tags=["ws"])  # Commented out - replaced with REST API
 
-@app.get("/api/health")
-def health_check():
-    return {"status": "ok"}

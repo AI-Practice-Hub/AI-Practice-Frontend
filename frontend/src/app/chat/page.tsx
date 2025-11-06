@@ -146,18 +146,10 @@ function ChatPageContent() {
         // Update URL with new chat ID
         router.push(`/chat?id=${chatId}`);
         
-        // Send message after chat is created
-        if (input.trim()) {
-          sendMessage({ type: "text", content: input });
-        }
-        
-        // Send file messages
-        files.forEach(file => {
-          sendMessage({
-            type: file.type,
-            file_name: file.file.name,
-            file_size: file.file.size
-          });
+        // Send combined message with text and files
+        sendMessage({ 
+          content: input.trim() || undefined,
+          files: files.map(f => f.file)
         });
         
         addMessage({
@@ -174,18 +166,10 @@ function ChatPageContent() {
       return;
     }
     
-    // Send message via WebSocket
-    if (input.trim()) {
-      sendMessage({ type: "text", content: input });
-    }
-    
-    // Send file messages
-    files.forEach(file => {
-      sendMessage({
-        type: file.type,
-        file_name: file.file.name,
-        file_size: file.file.size
-      });
+    // Send combined message with text and files
+    sendMessage({ 
+      content: input.trim() || undefined,
+      files: files.map(f => f.file)
     });
     
     addMessage({
@@ -211,22 +195,6 @@ function ChatPageContent() {
       toast.error("PDF file too large (max 5MB)");
       return;
     }
-    
-    // Send file metadata via WebSocket
-    sendMessage({
-      type,
-      file_name: file.name,
-      file_size: file.size
-    });
-    
-    addMessage({
-      sender: "user",
-      content: null,
-      file_type: type,
-      file_name: file.name,
-      file_url: `/files/${file.name}`,
-      timestamp: new Date().toISOString()
-    });
     
     // Reset input value so same file can be selected again
     e.target.value = "";
