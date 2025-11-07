@@ -79,7 +79,7 @@ export function ChatSidebar({
       {open ? (
         <Button
           onClick={onNewChat}
-          className="hidden md:flex items-center gap-2 mt-1 mb-2 w-[90%] mx-auto h-11 bg-sidebar-accent hover:bg-sidebar-accent/80 text-sidebar-accent-foreground"
+          className="hidden md:flex items-center gap-2 mt-2 mb-2 w-[90%] mx-auto h-11 bg-sidebar-accent hover:bg-sidebar-accent/80 text-sidebar-accent-foreground"
         >
           <Plus size={18} />
           <span>New chat</span>
