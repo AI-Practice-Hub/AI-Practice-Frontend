@@ -5,7 +5,8 @@ import { useRouter, useSearchParams } from "next/navigation";
 import "../chat-scrollbar.css";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { useChat, useWebSocket, useAudioRecorder, useToast } from "@/hooks";
-import { ChatSidebar, ChatHeader, MessageList, ChatInput, ThinkingLoader, FilePreview } from "@/components/chat";
+import { ChatSidebar, ChatHeader, MessageList, ChatInput, ThinkingLoader, TestCaseModal } from "@/components/chat";
+import { FilePreview } from "@/components/chat/ChatInput";
 import { MessageAttachment } from "@/types/chat";
 
 function ChatPageContent() {
@@ -55,9 +56,19 @@ function ChatPageContent() {
   // Thinking state (bot is typing)
   const [isThinking, setIsThinking] = useState(false);
   
+  // Test case modal state
+  const [showTestCaseModal, setShowTestCaseModal] = useState(false);
+  const [availableTestCases, setAvailableTestCases] = useState<any[]>([]);
+  const [isSubmittingTestCases, setIsSubmittingTestCases] = useState(false);
+  
   // WebSocket connection
   const { sendMessage, isConnected } = useWebSocket(selectedChat, (data) => {
-    if (data.message) {
+    if (data.type === 'test-case-approval' && data.test_case) {
+      // Show test case selection modal instead of adding to chat
+      setAvailableTestCases(data.test_case);
+      setShowTestCaseModal(true);
+      setIsThinking(false);
+    } else if (data.message) {
       setIsThinking(false); // Stop thinking animation
       addMessage({
         sender: "bot",
@@ -182,11 +193,37 @@ function ChatPageContent() {
     setIsThinking(true); // Start thinking animation
   };
 
+  // Handle test case selection submission
+  const handleTestCaseSubmit = async (selectedTestCases: any[]) => {
+    if (!selectedChat || selectedTestCases.length === 0) return;
+
+    setIsSubmittingTestCases(true);
+    try {
+      // Send the selected test cases as a JSON string
+      sendMessage({
+        content: JSON.stringify(selectedTestCases)
+      });
+
+      // Add user message to chat
+      addMessage({
+        sender: "user",
+        content: `Selected ${selectedTestCases.length} test case${selectedTestCases.length !== 1 ? 's' : ''}: ${selectedTestCases.map(tc => tc.test_name).join(', ')}`,
+        timestamp: new Date().toISOString(),
+      });
+
+      setIsThinking(true); // Start thinking animation for bot response
+    } catch (error) {
+      toast.error("Failed to submit test cases");
+    } finally {
+      setIsSubmittingTestCases(false);
+    }
+  };
+
   // Handle file/image/pdf upload
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, type: "image" | "pdf") => {
     const file = e.target.files?.[0];
     if (!file) return;
-    
+
     if (type === "image" && file.size > 3 * 1024 * 1024) {
       toast.error("Image file too large (max 3MB)");
       return;
@@ -195,7 +232,7 @@ function ChatPageContent() {
       toast.error("PDF file too large (max 5MB)");
       return;
     }
-    
+
     // Reset input value so same file can be selected again
     e.target.value = "";
   };
@@ -246,6 +283,15 @@ function ChatPageContent() {
           />
         </div>
       </div>
+
+      {/* Test Case Selection Modal */}
+      <TestCaseModal
+        isOpen={showTestCaseModal}
+        onClose={() => setShowTestCaseModal(false)}
+        testCases={availableTestCases}
+        onSubmit={handleTestCaseSubmit}
+        isLoading={isSubmittingTestCases}
+      />
     </div>
   );
 }

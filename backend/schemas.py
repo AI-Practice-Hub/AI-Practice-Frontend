@@ -1,5 +1,5 @@
 from pydantic import BaseModel, EmailStr, Field, validator
-from typing import Optional
+from typing import Optional, List
 from datetime import datetime
 
 
@@ -59,6 +59,7 @@ class MessageBase(BaseModel):
     file_name: Optional[str] = None
     file_url: Optional[str] = None
     invoke_type: Optional[str] = None
+    test_case: Optional[List[dict]] = None  # For test case approval responses
 
 
 class MessageCreate(MessageBase):

@@ -16,6 +16,40 @@ from langchain_core.messages import HumanMessage
 
 router = APIRouter()
 
+# Dummy test case data
+TEST_CASES = [
+    {
+        "test_case_id": "TC_001",
+        "test_name": "User Login Validation",
+        "description": "Verify user can login with valid credentials and access dashboard"
+    },
+    {
+        "test_case_id": "TC_002",
+        "test_name": "Password Reset Flow",
+        "description": "Test the complete password reset process via email"
+    },
+    {
+        "test_case_id": "TC_003",
+        "test_name": "Product Search Functionality",
+        "description": "Validate search results, filters, and sorting options"
+    },
+    {
+        "test_case_id": "TC_004",
+        "test_name": "Shopping Cart Operations",
+        "description": "Test adding/removing items, quantity updates, and checkout"
+    },
+    {
+        "test_case_id": "TC_005",
+        "test_name": "Payment Processing",
+        "description": "Verify payment gateway integration and transaction handling"
+    },
+    {
+        "test_case_id": "TC_006",
+        "test_name": "User Profile Management",
+        "description": "Test profile updates, avatar upload, and settings changes"
+    }
+]
+
 
 def get_gemini_response(user_query: str) -> str:
     """Generate response using Gemini AI"""
@@ -142,8 +176,15 @@ async def send_message(
     # Determine response type based on inputs (simplified since no website_url)
     response_type = determine_response_type(content or "", "", files or [])
     
+    # Check if user is requesting test cases
+    if content and "show test" in content.lower():
+        response_type = "test-case-approval"
+    
     # Generate appropriate response
-    if response_type == "user_interrupt":
+    if response_type == "test-case-approval":
+        # Return test case data instead of regular message
+        bot_content = TEST_CASES  # This will be handled specially by frontend
+    elif response_type == "user_interrupt":
         if file_names:
             bot_content = f"Do you want me to process these files: {', '.join(file_names)}?"
         else:
@@ -156,6 +197,12 @@ async def send_message(
             bot_content = "I received your files. How can I help you with them?"
     
     # Store bot response in database
+    if response_type == "test-case-approval":
+        # For test case approval, store a placeholder message
+        bot_content = "Test cases available for selection"
+    else:
+        bot_content = bot_content
+    
     bot_msg = Message(
         chat_id=chat_id,
         sender="bot",
@@ -171,7 +218,8 @@ async def send_message(
         id=bot_msg.id,
         chat_id=bot_msg.chat_id,
         sender=bot_msg.sender,
-        content=bot_msg.content,
-        invoke_type=response_type,  # Use response_type as invoke_type for bot messages
+        content=bot_content,
+        invoke_type=response_type,
+        test_case=TEST_CASES if response_type == "test-case-approval" else None,
         timestamp=bot_msg.timestamp
     )

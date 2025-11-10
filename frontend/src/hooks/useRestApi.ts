@@ -20,8 +20,10 @@ export interface UseWebSocketReturn {
 }
 
 export interface ChatBotResponse {
-  type: "ai_response" | "user_interrupt";
+  type: "ai_response" | "user_interrupt" | "test-case-approval";
   response: string;
+  test_case?: any[]; // For test case approval responses
+  fullResponse?: any; // Full message response
 }
 
 export function useWebSocket(
@@ -73,10 +75,20 @@ export function useWebSocket(
 
       // Simulate the same WebSocket callback behavior
       if (onMessageRef.current) {
-        onMessageRef.current({
-          message: messageResponse.content,
-          type: messageResponse.invoke_type, // Use invoke_type from the response
-        });
+        if (messageResponse.invoke_type === 'test-case-approval') {
+          // For test case approval, pass the full response data
+          onMessageRef.current({
+            message: messageResponse.content,
+            type: messageResponse.invoke_type,
+            test_case: messageResponse.test_case,
+            fullResponse: messageResponse
+          });
+        } else {
+          onMessageRef.current({
+            message: messageResponse.content,
+            type: messageResponse.invoke_type, // Use invoke_type from the response
+          });
+        }
       }
     } catch (error) {
       console.error('Failed to send message:', error);

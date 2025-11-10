@@ -11,6 +11,12 @@ export interface MessageAttachment {
   size?: number;
 }
 
+export interface TestCase {
+  test_case_id: string;
+  test_name: string;
+  description: string;
+}
+
 export interface Message {
   id?: number;
   chat_id?: number;
@@ -21,6 +27,7 @@ export interface Message {
   file_url?: string;
   invoke_type?: string;
   attachments?: MessageAttachment[]; // Support multiple attachments
+  test_case?: TestCase[]; // For test case approval responses
   timestamp: string;
 }
 
