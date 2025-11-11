@@ -3,12 +3,15 @@ import { Search, Plus, AlignJustify } from 'lucide-react';
 import { Chat } from '@/types/chat';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
+import { ChatItem } from './ChatItem';
 
 interface ChatSidebarProps {
   chats: Chat[];
   selectedChat: number | null;
   onSelectChat: (chatId: number) => void;
   onNewChat: () => void;
+  onUpdateChat: (chatId: number, title: string) => Promise<void>;
+  onDeleteChat: (chatId: number) => Promise<void>;
   open: boolean;
   onToggle: () => void;
 }
@@ -18,6 +21,8 @@ export function ChatSidebar({
   selectedChat,
   onSelectChat,
   onNewChat,
+  onUpdateChat,
+  onDeleteChat,
   open,
   onToggle,
 }: ChatSidebarProps) {
@@ -126,16 +131,14 @@ export function ChatSidebar({
         <div className="flex-1 overflow-y-auto px-4 custom-scrollbar" style={{ minHeight: 0 }}>
           {filteredChats.length > 0 ? (
             filteredChats.map((chat) => (
-              <Button
+              <ChatItem
                 key={chat.id}
-                variant="ghost"
-                onClick={() => onSelectChat(chat.id)}
-                className={`w-full justify-start text-left px-4 py-2 my-1 font-normal text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground ${
-                  selectedChat === chat.id ? 'bg-sidebar-accent text-sidebar-accent-foreground' : ''
-                }`}
-              >
-                {chat.title || `Chat ${chat.id}`}
-              </Button>
+                chat={chat}
+                isSelected={selectedChat === chat.id}
+                onSelect={() => onSelectChat(chat.id)}
+                onUpdate={onUpdateChat}
+                onDelete={onDeleteChat}
+              />
             ))
           ) : (
             <div className="text-center py-8">

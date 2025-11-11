@@ -1,5 +1,5 @@
 import React, { useRef, useState, useEffect } from 'react';
-import { Image as Gallery, Mic, Send, X, FileText, Paperclip } from 'lucide-react';
+import { Mic, Send, X, FileText, Paperclip } from 'lucide-react';
 
 export interface FilePreview {
   file: File;
@@ -10,7 +10,7 @@ export interface FilePreview {
 interface ChatInputProps {
   value: string;
   onChange: (value: string) => void;
-  onSubmit: (e: React.FormEvent, files: FilePreview[]) => void;
+  onSubmit: (e: React.FormEvent | null, files: FilePreview[]) => void;
   onImageSelect: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onPdfSelect: (e: React.ChangeEvent<HTMLInputElement>) => void;
   recording: boolean;
@@ -95,9 +95,9 @@ export function ChatInput({
   };
 
   // Handle form submit and clear previews
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    onSubmit(e, filePreviews); // Pass files to parent
+  const handleSubmit = (e?: React.FormEvent) => {
+    e?.preventDefault();
+    onSubmit(e || null, filePreviews); // Pass files to parent
     clearAllFiles();
   };
 
@@ -189,7 +189,7 @@ export function ChatInput({
             onKeyDown={(e) => {
               if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault();
-                handleSubmit(e as any);
+                handleSubmit();
               }
             }}
             rows={1}

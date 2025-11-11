@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
-import { FileText, Image as ImageIcon, Copy, Download, Check } from 'lucide-react';
+import { FileText, Copy, Download, Check } from 'lucide-react';
 import { Message } from '@/types/chat';
 import { Button } from '@/components/ui/Button';
 
@@ -58,7 +58,7 @@ function CodeBlock({ language, children }: { language: string; children: string 
 
       {/* Code Syntax Highlighter */}
       <SyntaxHighlighter
-        style={oneDark as any}
+        style={oneDark}
         language={language}
         customStyle={{
           borderRadius: 8,
@@ -136,21 +136,20 @@ export function ChatMessage({ message }: ChatMessageProps) {
           }}
         >
           <ReactMarkdown
-            children={message.content || ''}
             components={{
               // Wrap code blocks in a container
               pre({ children, ...props }) {
                 return <div className="max-w-full overflow-hidden">{children}</div>;
               },
               // Handle code blocks and inline code
-              code({ node, className, children, ...props }: any) {
+              code({ node, className, children, ...props }) {
                 const match = /language-(\w+)/.exec(className || '');
                 const inline = !match;
                 
                 // Code block (multi-line with language)
                 if (!inline && match) {
                   const codeString = String(children).replace(/\n$/, '');
-                  return <CodeBlock language={match[1]} children={codeString} />;
+                  return <CodeBlock language={match[1]}>{codeString}</CodeBlock>;
                 }
                 
                 // Inline code
@@ -225,7 +224,9 @@ export function ChatMessage({ message }: ChatMessageProps) {
                 );
               },
             }}
-          />
+          >
+            {message.content || ''}
+          </ReactMarkdown>
         </div>
       )}
     </div>

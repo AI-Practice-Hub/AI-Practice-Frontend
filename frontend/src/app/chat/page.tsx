@@ -4,7 +4,8 @@ import React, { useState, useRef, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import "../chat-scrollbar.css";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
-import { useChat, useWebSocket, useAudioRecorder, useToast } from "@/hooks";
+import { TestCase } from '@/types/chat';
+import { useChat, useWebSocket, useAudioRecorder, useToast } from '@/hooks';
 import { ChatSidebar, ChatHeader, MessageList, ChatInput, ThinkingLoader, TestCaseModal } from "@/components/chat";
 import { FilePreview } from "@/components/chat/ChatInput";
 import { MessageAttachment } from "@/types/chat";
@@ -17,7 +18,7 @@ function ChatPageContent() {
   const toast = useToast();
   
   // Chat management
-  const { chats, selectedChat, messages, createChat, selectChat, addMessage, loading } = useChat();
+  const { chats, selectedChat, messages, createChat, selectChat, addMessage, updateChat, deleteChat, loading } = useChat();
   
   // Track if we've initialized from URL
   const [urlInitialized, setUrlInitialized] = useState(false);
@@ -58,7 +59,7 @@ function ChatPageContent() {
   
   // Test case modal state
   const [showTestCaseModal, setShowTestCaseModal] = useState(false);
-  const [availableTestCases, setAvailableTestCases] = useState<any[]>([]);
+  const [availableTestCases, setAvailableTestCases] = useState<TestCase[]>([]);
   const [isSubmittingTestCases, setIsSubmittingTestCases] = useState(false);
   
   // WebSocket connection
@@ -134,8 +135,8 @@ function ChatPageContent() {
   };
 
   // Send message
-  const handleSend = async (e: React.FormEvent, files: FilePreview[]) => {
-    e.preventDefault();
+  const handleSend = async (e: React.FormEvent | null, files: FilePreview[]) => {
+    e?.preventDefault();
     if (!input.trim() && files.length === 0) return;
     
     let chatId = selectedChat;
@@ -194,7 +195,7 @@ function ChatPageContent() {
   };
 
   // Handle test case selection submission
-  const handleTestCaseSubmit = async (selectedTestCases: any[]) => {
+  const handleTestCaseSubmit = async (selectedTestCases: TestCase[]) => {
     if (!selectedChat || selectedTestCases.length === 0) return;
 
     setIsSubmittingTestCases(true);
@@ -256,6 +257,8 @@ function ChatPageContent() {
         selectedChat={selectedChat}
         onSelectChat={handleSelectChatMobile}
         onNewChat={handleNewChat}
+        onUpdateChat={updateChat}
+        onDeleteChat={deleteChat}
         open={sidebarOpen}
         onToggle={() => setSidebarOpen((v) => !v)}
       />

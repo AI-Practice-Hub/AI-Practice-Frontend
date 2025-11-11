@@ -84,6 +84,31 @@ def list_chats(db: Session = Depends(get_db), user_id: int = Depends(get_current
     chats = db.query(Chat).filter(Chat.user_id == user_id).order_by(Chat.created_at.desc()).all()
     return chats
 
+@router.put("/chat/{chat_id}", response_model=ChatOut)
+def update_chat(chat_id: int, chat_update: ChatCreate, db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
+    chat = db.query(Chat).filter(Chat.id == chat_id, Chat.user_id == user_id).first()
+    if not chat:
+        raise HTTPException(status_code=404, detail="Chat not found or unauthorized")
+    
+    chat.title = chat_update.title
+    db.commit()
+    db.refresh(chat)
+    return chat
+
+@router.delete("/chat/{chat_id}")
+def delete_chat(chat_id: int, db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
+    chat = db.query(Chat).filter(Chat.id == chat_id, Chat.user_id == user_id).first()
+    if not chat:
+        raise HTTPException(status_code=404, detail="Chat not found or unauthorized")
+    
+    # Delete all messages in the chat first
+    db.query(Message).filter(Message.chat_id == chat_id).delete()
+    # Delete the chat
+    db.delete(chat)
+    db.commit()
+    
+    return {"message": "Chat deleted successfully"}
+
 @router.get("/chat/{chat_id}/messages", response_model=List[MessageOut])
 def get_messages(chat_id: int, db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
     chat = db.query(Chat).filter(Chat.id == chat_id, Chat.user_id == user_id).first()

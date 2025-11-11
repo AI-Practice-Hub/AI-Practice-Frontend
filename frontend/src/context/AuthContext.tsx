@@ -53,7 +53,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         // Redirect to chat page
         router.push(ROUTES.CHAT);
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Login failed:', error);
       throw error;
     }
@@ -64,7 +64,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       await api.post('/signup', credentials);
       // After successful signup, redirect to login
       router.push(ROUTES.LOGIN);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Signup failed:', error);
       throw error;
     }

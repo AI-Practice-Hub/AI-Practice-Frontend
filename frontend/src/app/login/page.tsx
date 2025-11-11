@@ -19,8 +19,9 @@ export default function LoginPage() {
     try {
       await login({ email, password });
       // Router navigation handled by AuthContext
-    } catch (err: any) {
-      setError(err.response?.data?.detail || "Login failed.");
+    } catch (err: unknown) {
+      const error = err as { response?: { data?: { detail?: string } } };
+      setError(error.response?.data?.detail || "Login failed.");
     } finally {
       setLoading(false);
     }

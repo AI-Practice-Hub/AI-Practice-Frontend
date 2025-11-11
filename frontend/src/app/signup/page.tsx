@@ -19,8 +19,9 @@ export default function SignupPage() {
     try {
       await signup({ email, password });
       // Router navigation handled by AuthContext
-    } catch (err: any) {
-      setError(err.response?.data?.detail || "Signup failed.");
+    } catch (err: unknown) {
+      const error = err as { response?: { data?: { detail?: string } } };
+      setError(error.response?.data?.detail || "Signup failed.");
     } finally {
       setLoading(false);
     }

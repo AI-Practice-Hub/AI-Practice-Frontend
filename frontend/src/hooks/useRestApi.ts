@@ -1,4 +1,4 @@
-import { useRef, useCallback } from 'react';
+import { useRef, useCallback, useEffect } from 'react';
 import { api } from '@/lib/api';
 import { Message } from '@/types/chat';
 
@@ -22,18 +22,30 @@ export interface UseWebSocketReturn {
 export interface ChatBotResponse {
   type: "ai_response" | "user_interrupt" | "test-case-approval";
   response: string;
-  test_case?: any[]; // For test case approval responses
-  fullResponse?: any; // Full message response
+  test_case?: Array<{test_case_id: string; test_name: string; description: string}>; // For test case approval responses
+  fullResponse?: Message; // Full message response
+}
+
+export interface WebSocketMessageData {
+  message?: string | null;
+  type?: string;
+  test_case?: Array<{test_case_id: string; test_name: string; description: string}>;
+  fullResponse?: Message;
+  error?: string;
 }
 
 export function useWebSocket(
   chatId: number | null,
-  onMessage?: (data: any) => void,
+  onMessage?: (data: WebSocketMessageData) => void,
   messages: Message[] = [] // Accept messages array to determine invoke_type
 ): UseWebSocketReturn {
   // Store the callback in a ref to avoid issues
   const onMessageRef = useRef(onMessage);
-  onMessageRef.current = onMessage;
+  
+  // Update ref in useEffect to avoid updating during render
+  useEffect(() => {
+    onMessageRef.current = onMessage;
+  }, [onMessage]);
 
   const sendMessage = useCallback(async (message: WebSocketMessage) => {
     if (!chatId) {

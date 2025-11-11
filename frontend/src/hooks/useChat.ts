@@ -9,6 +9,7 @@ export interface UseChatReturn {
   loading: boolean;
   createChat: (title?: string) => Promise<Chat>;
   selectChat: (chatId: number | null) => void;
+  updateChat: (chatId: number, title: string) => Promise<void>;
   deleteChat: (chatId: number) => Promise<void>;
   addMessage: (message: Message) => void;
   setMessages: React.Dispatch<React.SetStateAction<Message[]>>;
@@ -78,6 +79,18 @@ export function useChat(): UseChatReturn {
     setSelectedChat(chatId);
   }, []);
 
+  const updateChat = useCallback(async (chatId: number, title: string) => {
+    try {
+      await api.put(`/chat/${chatId}`, { title });
+      setChats((prev) => prev.map((chat) => 
+        chat.id === chatId ? { ...chat, title } : chat
+      ));
+    } catch (error) {
+      console.error('Failed to update chat:', error);
+      throw error;
+    }
+  }, []);
+
   const deleteChat = useCallback(async (chatId: number) => {
     try {
       await api.delete(`/chat/${chatId}`);
@@ -105,6 +118,7 @@ export function useChat(): UseChatReturn {
     loading,
     createChat,
     selectChat,
+    updateChat,
     deleteChat,
     addMessage,
     setMessages,
