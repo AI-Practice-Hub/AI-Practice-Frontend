@@ -23,7 +23,7 @@ export function MessageList({ messages, chatEndRef, isThinking = false }: Messag
             letterSpacing: '-0.01em',
           }}
         >
-          Welcome to AI Practice Hub
+          Welcome to Chat2Test Hub
         </h1>
         <p
           className="text-base sm:text-lg md:text-xl text-muted-foreground mt-2 text-center"
