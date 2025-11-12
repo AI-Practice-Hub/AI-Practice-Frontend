@@ -50,8 +50,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         // For now, we'll set a basic user object
         setUser({ id: 0, email: credentials.email });
         
-        // Redirect to chat page
-        router.push(ROUTES.CHAT);
+        // Redirect to dashboard page
+        router.push(ROUTES.DASHBOARD);
       }
     } catch (error: unknown) {
       console.error('Login failed:', error);

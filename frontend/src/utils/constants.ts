@@ -17,4 +17,5 @@ export const ROUTES = {
   LOGIN: '/login',
   SIGNUP: '/signup',
   CHAT: '/chat',
+  DASHBOARD: '/dashboard',
 } as const;

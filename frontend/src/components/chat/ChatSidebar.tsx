@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
-import { Search, Plus, AlignJustify } from 'lucide-react';
+import Link from 'next/link';
+import { Search, Plus, AlignJustify, ArrowLeft } from 'lucide-react';
 import { Chat } from '@/types/chat';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
@@ -79,6 +80,19 @@ export function ChatSidebar({
           </Button>
         )}
       </div>
+
+      {/* Back to Dashboard Button */}
+      {open && (
+        <Link href="/dashboard">
+          <Button
+            variant="ghost"
+            className="flex items-center gap-2 mt-2 mb-2 w-[90%] mx-auto h-11 text-sidebar-foreground hover:bg-sidebar-accent"
+          >
+            <ArrowLeft size={18} />
+            <span>Back to Dashboard</span>
+          </Button>
+        </Link>
+      )}
 
       {/* New Chat Button - Hidden on mobile, shown on tablet+ */}
       {open ? (
