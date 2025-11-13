@@ -7,7 +7,7 @@ export interface UseChatReturn {
   selectedChat: number | null;
   messages: Message[];
   loading: boolean;
-  createChat: (title?: string) => Promise<Chat>;
+  createChat: (title?: string, projectId?: number) => Promise<Chat>;
   selectChat: (chatId: number | null) => void;
   updateChat: (chatId: number, title: string) => Promise<void>;
   deleteChat: (chatId: number) => Promise<void>;
@@ -16,39 +16,26 @@ export interface UseChatReturn {
   refreshChats: () => Promise<void>;
 }
 
-export function useChat(): UseChatReturn {
+export function useChat(projectId?: number): UseChatReturn {
   const [chats, setChats] = useState<Chat[]>([]);
   const [selectedChat, setSelectedChat] = useState<number | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(false);
 
-  // Fetch all chats on mount
-  useEffect(() => {
-    refreshChats();
-  }, []);
-
-  // Fetch messages when chat is selected
-  useEffect(() => {
-    if (selectedChat) {
-      fetchMessages(selectedChat);
-    } else {
-      setMessages([]);
-    }
-  }, [selectedChat]);
-
-  const refreshChats = async () => {
+  const refreshChats = useCallback(async () => {
     try {
       setLoading(true);
-      const res = await api.get('/chat/');
+      const params = projectId ? { project_id: projectId } : {};
+      const res = await api.get('/chat/', { params });
       setChats(res.data);
     } catch (error) {
       console.error('Failed to fetch chats:', error);
     } finally {
       setLoading(false);
     }
-  };
+  }, [projectId]);
 
-  const fetchMessages = async (chatId: number) => {
+  const fetchMessages = useCallback(async (chatId: number) => {
     try {
       setLoading(true);
       const res = await api.get(`/chat/${chatId}/messages`);
@@ -59,11 +46,28 @@ export function useChat(): UseChatReturn {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const createChat = useCallback(async (title: string = 'New Chat'): Promise<Chat> => {
+  // Fetch chats on mount and when projectId changes
+  useEffect(() => {
+    refreshChats();
+  }, [refreshChats]);
+
+  // Fetch messages when chat is selected
+  useEffect(() => {
+    if (selectedChat) {
+      fetchMessages(selectedChat);
+    } else {
+      setMessages([]);
+    }
+  }, [selectedChat, fetchMessages]);
+
+  const createChat = useCallback(async (title: string = 'New Chat', projectIdParam?: number): Promise<Chat> => {
     try {
-      const res = await api.post('/chat/', { title });
+      const res = await api.post('/chat/', { 
+        title,
+        project_id: projectIdParam || projectId 
+      });
       const newChat = res.data;
       setChats((prev) => [newChat, ...prev]);
       setSelectedChat(newChat.id);
@@ -73,7 +77,7 @@ export function useChat(): UseChatReturn {
       console.error('Failed to create chat:', error);
       throw error;
     }
-  }, []);
+  }, [projectId]);
 
   const selectChat = useCallback((chatId: number | null) => {
     setSelectedChat(chatId);

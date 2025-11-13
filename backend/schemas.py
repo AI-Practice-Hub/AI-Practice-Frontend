@@ -36,8 +36,29 @@ class UserLogin(BaseModel):
     password: str
 
 
+class ProjectBase(BaseModel):
+    name: str
+    description: Optional[str] = None
+    status: str = "active"
+
+
+class ProjectCreate(ProjectBase):
+    pass
+
+
+class ProjectOut(ProjectBase):
+    id: int
+    user_id: int
+    created_at: datetime
+
+    model_config = {
+        "from_attributes": True
+    }
+
+
 class ChatBase(BaseModel):
     title: Optional[str] = None
+    project_id: int
 
 
 class ChatCreate(ChatBase):
@@ -47,6 +68,7 @@ class ChatCreate(ChatBase):
 class ChatOut(ChatBase):
     id: int
     user_id: int
+    project_id: int
     created_at: datetime
 
     class Config:

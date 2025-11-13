@@ -13,8 +13,15 @@ export interface MessageAttachment {
 
 export interface TestCase {
   test_case_id: string;
-  test_name: string;
-  description: string;
+  title: string;
+  module_feature?: string;
+  priority: string;
+  preconditions?: string;
+  test_steps?: string;
+  test_data?: string;
+  expected_result: string;
+  actual_result?: string;
+  status: string;
 }
 
 export interface Message {

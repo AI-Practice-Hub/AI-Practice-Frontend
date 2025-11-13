@@ -8,7 +8,7 @@ import { BaseSidebar } from '@/components/ui/BaseSidebar';
 
 const navItems = [
   { title: "Dashboard", icon: LayoutDashboard, url: "/dashboard" },
-  { title: "Projects", icon: FolderKanban, url: "/projects" },
+  { title: "Projects", icon: FolderKanban, url: "/dashboard/projects" },
   { title: "Reports", icon: FileText, url: "/reports" },
   { title: "Settings", icon: Settings, url: "/settings" },
   { title: "Chat", icon: MessageCircle, url: "/chat" },

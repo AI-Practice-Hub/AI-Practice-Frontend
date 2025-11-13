@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Form, File, UploadFile
 from sqlalchemy.orm import Session
 from typing import List, Optional
-from models import Chat, Message, User
+from models import Chat, Message, User, Project
 from schemas import ChatCreate, ChatOut, MessageCreate, MessageOut, ChatBotResponse
 import db
 from datetime import datetime
@@ -19,34 +19,76 @@ router = APIRouter()
 # Dummy test case data
 TEST_CASES = [
     {
-        "test_case_id": "TC_001",
-        "test_name": "User Login Validation",
-        "description": "Verify user can login with valid credentials and access dashboard"
+        "test_case_id": "TC-LOGIN-001",
+        "title": "Verify user can log in with valid credentials",
+        "module_feature": "Authentication",
+        "priority": "High",
+        "preconditions": "User is registered in the system; the system is online.",
+        "test_steps": "1. Navigate to the login page.\n2. Enter a valid username in the 'Username' field.\n3. Enter a valid password in the 'Password' field.\n4. Click the 'Login' button.",
+        "test_data": "Username: testuser@example.com, Password: SecureP@ss123.",
+        "expected_result": "User is successfully redirected to the main dashboard/homepage.",
+        "actual_result": "User is redirected to the main dashboard.",
+        "status": "Pass"
     },
     {
-        "test_case_id": "TC_002",
-        "test_name": "Password Reset Flow",
-        "description": "Test the complete password reset process via email"
+        "test_case_id": "TC-PASSWORD-001",
+        "title": "Test the complete password reset process via email",
+        "module_feature": "Authentication",
+        "priority": "High",
+        "preconditions": "User has a registered email address; email service is operational.",
+        "test_steps": "1. Navigate to the login page.\n2. Click 'Forgot Password' link.\n3. Enter registered email address.\n4. Check email for reset link.\n5. Click reset link and set new password.\n6. Attempt login with new password.",
+        "test_data": "Email: testuser@example.com, New Password: NewSecureP@ss456.",
+        "expected_result": "Password is successfully reset and user can login with new credentials.",
+        "actual_result": "Password reset email sent successfully.",
+        "status": "Pass"
     },
     {
-        "test_case_id": "TC_003",
-        "test_name": "Product Search Functionality",
-        "description": "Validate search results, filters, and sorting options"
+        "test_case_id": "TC-SEARCH-001",
+        "title": "Validate search results, filters, and sorting options",
+        "module_feature": "Search",
+        "priority": "Medium",
+        "preconditions": "Products are available in the system; search functionality is enabled.",
+        "test_steps": "1. Navigate to the search page.\n2. Enter search term 'laptop'.\n3. Apply price filter ($500-$1000).\n4. Sort by 'Price: Low to High'.\n5. Verify search results match criteria.",
+        "test_data": "Search Term: laptop, Price Range: $500-$1000.",
+        "expected_result": "Search results display only laptops within the specified price range, sorted correctly.",
+        "actual_result": "Search results filtered and sorted as expected.",
+        "status": "Pass"
     },
     {
-        "test_case_id": "TC_004",
-        "test_name": "Shopping Cart Operations",
-        "description": "Test adding/removing items, quantity updates, and checkout"
+        "test_case_id": "TC-CART-001",
+        "title": "Test adding/removing items, quantity updates, and checkout",
+        "module_feature": "Shopping Cart",
+        "priority": "High",
+        "preconditions": "User is logged in; products are available for purchase.",
+        "test_steps": "1. Add 2 items to cart.\n2. Update quantity of first item to 3.\n3. Remove second item from cart.\n4. Proceed to checkout.\n5. Complete purchase.",
+        "test_data": "Items: Laptop ($800), Mouse ($25); Payment: Credit Card.",
+        "expected_result": "Cart updates correctly, checkout completes successfully.",
+        "actual_result": "All cart operations work as expected.",
+        "status": "Pass"
     },
     {
-        "test_case_id": "TC_005",
-        "test_name": "Payment Processing",
-        "description": "Verify payment gateway integration and transaction handling"
+        "test_case_id": "TC-PAYMENT-001",
+        "title": "Verify payment gateway integration and transaction handling",
+        "module_feature": "Payment",
+        "priority": "Critical",
+        "preconditions": "Payment gateway is configured; user has valid payment method.",
+        "test_steps": "1. Add items to cart and proceed to checkout.\n2. Enter payment information.\n3. Submit payment.\n4. Verify transaction completion.\n5. Check order confirmation.",
+        "test_data": "Payment Method: Visa ****1234, Amount: $825.",
+        "expected_result": "Payment processes successfully and order is confirmed.",
+        "actual_result": "Payment gateway integration working correctly.",
+        "status": "Pass"
     },
     {
-        "test_case_id": "TC_006",
-        "test_name": "User Profile Management",
-        "description": "Test profile updates, avatar upload, and settings changes"
+        "test_case_id": "TC-PROFILE-001",
+        "title": "Test profile updates, avatar upload, and settings changes",
+        "module_feature": "User Profile",
+        "priority": "Medium",
+        "preconditions": "User is logged in; profile editing is enabled.",
+        "test_steps": "1. Navigate to profile settings.\n2. Update name and contact information.\n3. Upload new avatar image.\n4. Change notification preferences.\n5. Save changes.",
+        "test_data": "Name: John Doe, Email: john@example.com, Avatar: profile.jpg.",
+        "expected_result": "Profile information updates successfully and displays correctly.",
+        "actual_result": "Profile updated with new information and avatar.",
+        "status": "Pass"
     }
 ]
 
@@ -73,31 +115,50 @@ def determine_response_type(content: str, website_url: str, files: List[UploadFi
 
 @router.post("/chat/", response_model=ChatOut)
 def create_chat(chat: ChatCreate, db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
-    new_chat = Chat(user_id=user_id, title=chat.title)
+    # Verify user owns the project
+    project = db.query(Project).filter(Project.id == chat.project_id, Project.user_id == user_id).first()
+    if not project:
+        raise HTTPException(status_code=404, detail="Project not found or unauthorized")
+    
+    new_chat = Chat(user_id=user_id, project_id=chat.project_id, title=chat.title)
     db.add(new_chat)
     db.commit()
     db.refresh(new_chat)
     return new_chat
 
 @router.get("/chat/", response_model=List[ChatOut])
-def list_chats(db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
-    chats = db.query(Chat).filter(Chat.user_id == user_id).order_by(Chat.created_at.desc()).all()
+def list_chats(project_id: Optional[int] = Query(None), db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
+    query = db.query(Chat).filter(Chat.user_id == user_id)
+    if project_id:
+        # Verify user owns the project
+        project = db.query(Project).filter(Project.id == project_id, Project.user_id == user_id).first()
+        if not project:
+            raise HTTPException(status_code=404, detail="Project not found or unauthorized")
+        query = query.filter(Chat.project_id == project_id)
+    chats = query.order_by(Chat.created_at.desc()).all()
     return chats
 
 @router.put("/chat/{chat_id}", response_model=ChatOut)
 def update_chat(chat_id: int, chat_update: ChatCreate, db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
-    chat = db.query(Chat).filter(Chat.id == chat_id, Chat.user_id == user_id).first()
+    chat = db.query(Chat).join(Chat.project).filter(Chat.id == chat_id, Project.user_id == user_id).first()
     if not chat:
         raise HTTPException(status_code=404, detail="Chat not found or unauthorized")
     
     chat.title = chat_update.title
+    chat.project_id = chat_update.project_id  # Allow changing project, but verify ownership
+    # Verify new project ownership
+    if chat_update.project_id != chat.project_id:
+        new_project = db.query(Project).filter(Project.id == chat_update.project_id, Project.user_id == user_id).first()
+        if not new_project:
+            raise HTTPException(status_code=404, detail="New project not found or unauthorized")
+    
     db.commit()
     db.refresh(chat)
     return chat
 
 @router.delete("/chat/{chat_id}")
 def delete_chat(chat_id: int, db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
-    chat = db.query(Chat).filter(Chat.id == chat_id, Chat.user_id == user_id).first()
+    chat = db.query(Chat).join(Chat.project).filter(Chat.id == chat_id, Project.user_id == user_id).first()
     if not chat:
         raise HTTPException(status_code=404, detail="Chat not found or unauthorized")
     
@@ -111,7 +172,7 @@ def delete_chat(chat_id: int, db: Session = Depends(get_db), user_id: int = Depe
 
 @router.get("/chat/{chat_id}/messages", response_model=List[MessageOut])
 def get_messages(chat_id: int, db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
-    chat = db.query(Chat).filter(Chat.id == chat_id, Chat.user_id == user_id).first()
+    chat = db.query(Chat).join(Chat.project).filter(Chat.id == chat_id, Project.user_id == user_id).first()
     if not chat:
         raise HTTPException(status_code=404, detail="Chat not found")
     
@@ -135,7 +196,7 @@ def get_messages(chat_id: int, db: Session = Depends(get_db), user_id: int = Dep
 
 @router.post("/chat/{chat_id}/message", response_model=MessageOut)
 def post_message(chat_id: int, message: MessageCreate, db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
-    chat = db.query(Chat).filter(Chat.id == chat_id, Chat.user_id == user_id).first()
+    chat = db.query(Chat).join(Chat.project).filter(Chat.id == chat_id, Project.user_id == user_id).first()
     if not chat:
         raise HTTPException(status_code=404, detail="Chat not found")
     new_message = Message(chat_id=chat_id, sender="user", content=message.content, timestamp=datetime.utcnow())
@@ -158,8 +219,8 @@ async def send_message(
     Send a message to chat and get bot response
     Replaces WebSocket functionality with REST API
     """
-    # Verify user owns the chat
-    chat = db.query(Chat).filter(Chat.id == chat_id, Chat.user_id == user_id).first()
+    # Verify user owns the chat (via project)
+    chat = db.query(Chat).join(Chat.project).filter(Chat.id == chat_id, Project.user_id == user_id).first()
     if not chat:
         raise HTTPException(status_code=404, detail="Chat not found or unauthorized")
     

@@ -1,6 +1,6 @@
 import { useRef, useCallback, useEffect } from 'react';
 import { api } from '@/lib/api';
-import { Message } from '@/types/chat';
+import { Message, TestCase } from '@/types/chat';
 
 export interface WebSocketMessage {
   type?: 'text' | 'image' | 'pdf' | 'audio'; // Optional since backend determines it
@@ -22,14 +22,14 @@ export interface UseWebSocketReturn {
 export interface ChatBotResponse {
   type: "ai_response" | "user_interrupt" | "test-case-approval";
   response: string;
-  test_case?: Array<{test_case_id: string; test_name: string; description: string}>; // For test case approval responses
+  test_case?: TestCase[]; // Use proper TestCase type
   fullResponse?: Message; // Full message response
 }
 
 export interface WebSocketMessageData {
   message?: string | null;
   type?: string;
-  test_case?: Array<{test_case_id: string; test_name: string; description: string}>;
+  test_case?: TestCase[]; // Use proper TestCase type
   fullResponse?: Message;
   error?: string;
 }

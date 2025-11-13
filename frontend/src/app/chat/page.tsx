@@ -14,11 +14,14 @@ function ChatPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   
+  // Get project ID from URL
+  const projectId = searchParams.get('projectId') ? parseInt(searchParams.get('projectId')!, 10) : undefined;
+  
   // Toast notifications
   const toast = useToast();
   
-  // Chat management
-  const { chats, selectedChat, messages, createChat, selectChat, addMessage, updateChat, deleteChat, loading } = useChat();
+  // Chat management - now filtered by project
+  const { chats, selectedChat, messages, createChat, selectChat, addMessage, updateChat, deleteChat, loading } = useChat(projectId);
   
   // Track if we've initialized from URL
   const [urlInitialized, setUrlInitialized] = useState(false);
@@ -36,21 +39,21 @@ function ChatPageContent() {
             selectChat(chatId);
           } else {
             // Chat doesn't exist, clear URL
-            router.replace('/chat');
+            router.replace(`/chat${projectId ? `?projectId=${projectId}` : ''}`);
           }
         }
       }
       setUrlInitialized(true);
     }
-  }, [urlInitialized, chats, searchParams, selectChat, router]);
+  }, [urlInitialized, chats, searchParams, selectChat, router, projectId]);
   
   // Custom select chat function that updates URL
   const handleSelectChat = (chatId: number | null) => {
     selectChat(chatId);
     if (chatId) {
-      router.push(`/chat?id=${chatId}`);
+      router.push(`/chat?id=${chatId}${projectId ? `&projectId=${projectId}` : ''}`);
     } else {
-      router.push('/chat');
+      router.push(`/chat${projectId ? `?projectId=${projectId}` : ''}`);
     }
   };
   
@@ -66,7 +69,7 @@ function ChatPageContent() {
   const { sendMessage, isConnected } = useWebSocket(selectedChat, (data) => {
     if (data.type === 'test-case-approval' && data.test_case) {
       // Show test case selection modal instead of adding to chat
-      setAvailableTestCases(data.test_case);
+      setAvailableTestCases(data.test_case as unknown as TestCase[]);
       setShowTestCaseModal(true);
       setIsThinking(false);
     } else if (data.message) {
@@ -129,9 +132,13 @@ function ChatPageContent() {
 
   // Create new chat
   const handleNewChat = async () => {
-    const newChat = await createChat("New Chat");
+    if (!projectId) {
+      toast.error("Cannot create chat: No project selected");
+      return;
+    }
+    const newChat = await createChat("New Chat", projectId);
     // Update URL with new chat ID
-    router.push(`/chat?id=${newChat.id}`);
+    router.push(`/chat?id=${newChat.id}&projectId=${projectId}`);
   };
 
   // Send message
@@ -151,12 +158,16 @@ function ChatPageContent() {
     
     // If no chat selected, create one first and send message
     if (!chatId) {
+      if (!projectId) {
+        toast.error("Cannot create chat: No project selected");
+        return;
+      }
       try {
-        const newChat = await createChat(input.slice(0, 30) || 'New Chat');
+        const newChat = await createChat(input.slice(0, 30) || 'New Chat', projectId);
         chatId = newChat.id;
         
         // Update URL with new chat ID
-        router.push(`/chat?id=${chatId}`);
+        router.push(`/chat?id=${chatId}&projectId=${projectId}`);
         
         // Send combined message with text and files
         sendMessage({ 
@@ -208,7 +219,7 @@ function ChatPageContent() {
       // Add user message to chat
       addMessage({
         sender: "user",
-        content: `Selected ${selectedTestCases.length} test case${selectedTestCases.length !== 1 ? 's' : ''}: ${selectedTestCases.map(tc => tc.test_name).join(', ')}`,
+        content: `Selected ${selectedTestCases.length} test case${selectedTestCases.length !== 1 ? 's' : ''}: ${selectedTestCases.map(tc => tc.title).join(', ')}`,
         timestamp: new Date().toISOString(),
       });
 

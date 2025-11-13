@@ -3,7 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, FileText, Settings, FolderKanban, MessageCircle } from 'lucide-react';
+import { LayoutDashboard, FileText, Settings, FolderKanban } from 'lucide-react';
 import { BaseSidebar } from '@/components/ui/BaseSidebar';
 
 const navItems = [
@@ -11,7 +11,6 @@ const navItems = [
   { title: "Projects", icon: FolderKanban, url: "/dashboard/projects" },
   { title: "Reports", icon: FileText, url: "/dashboard/reports" },
   { title: "Settings", icon: Settings, url: "/dashboard/settings" },
-  { title: "Chat", icon: MessageCircle, url: "/chat" },
 ];
 
 interface DashboardSidebarProps {

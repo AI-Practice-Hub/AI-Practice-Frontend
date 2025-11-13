@@ -6,6 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from user_routes import router as user_router
 from chat_routes import router as chat_router
+from project_routes import router as project_router
 from websocket import router as ws_router
 
 app = FastAPI()
@@ -26,6 +27,7 @@ async def root():
 subapi = FastAPI(title="Test Request Test API", version="0.1")
 subapi.include_router(user_router, tags=["Auth"])
 subapi.include_router(chat_router, tags=["Chat"])
+subapi.include_router(project_router, tags=["Projects"])
 app.mount("/Chat2Test/v1", subapi)
 # app.include_router(ws_router, tags=["ws"])  # Commented out - replaced with REST API
 
