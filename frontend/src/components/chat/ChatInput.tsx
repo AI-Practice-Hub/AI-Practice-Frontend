@@ -13,9 +13,9 @@ interface ChatInputProps {
   onSubmit: (e: React.FormEvent | null, files: FilePreview[]) => void;
   onImageSelect: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onPdfSelect: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  recording: boolean;
-  onStartRecording: () => void;
-  onStopRecording: () => void;
+  recording?: boolean;
+  onStartRecording?: () => void;
+  onStopRecording?: () => void;
 }
 
 export function ChatInput({
@@ -24,9 +24,9 @@ export function ChatInput({
   onSubmit,
   onImageSelect,
   onPdfSelect,
-  recording,
-  onStartRecording,
-  onStopRecording,
+  recording = false,
+  onStartRecording = () => {},
+  onStopRecording = () => {},
 }: ChatInputProps) {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const pdfInputRef = useRef<HTMLInputElement | null>(null);

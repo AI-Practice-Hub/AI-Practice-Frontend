@@ -1,4 +1,4 @@
-import { MessageSquare, Zap, Globe, CheckCircle } from "lucide-react";
+import { MessageSquare, Zap, Globe, CheckCircle } from 'lucide-react';
 
 const features = [
   {

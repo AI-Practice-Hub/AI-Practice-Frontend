@@ -1,5 +1,5 @@
-import { MainLayout } from '@/components/MainLayout';
+import { AppLayout } from '@/components/layout/AppLayout';
 
 export default function Layout({ children }: { children: React.ReactNode }) {
-  return <MainLayout>{children}</MainLayout>;
+  return <AppLayout sidebarVariant="main">{children}</AppLayout>;
 }

@@ -1,15 +1,16 @@
 "use client";
 
 import React from 'react';
-import { DashboardSidebar } from './DashboardSidebar';
+import { AppSidebar } from './AppSidebar';
 import { useSidebar } from '@/hooks/useSidebar';
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
 
-interface DashboardLayoutProps {
+interface AppLayoutProps {
   children: React.ReactNode;
+  sidebarVariant?: 'main' | 'dashboard';
 }
 
-export function DashboardLayout({ children }: DashboardLayoutProps) {
+export function AppLayout({ children, sidebarVariant = 'main' }: AppLayoutProps) {
   const { open, toggle } = useSidebar();
 
   return (
@@ -24,7 +25,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
         )}
 
         {/* Sidebar */}
-        <DashboardSidebar open={open} onToggle={toggle} />
+        <AppSidebar open={open} onToggle={toggle} variant={sidebarVariant} />
 
         {/* Main Content */}
         <div className="flex-1 flex flex-col min-h-0 overflow-hidden">

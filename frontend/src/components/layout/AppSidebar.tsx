@@ -6,7 +6,7 @@ import { usePathname } from 'next/navigation';
 import { LayoutDashboard, FolderKanban, FileText, Settings, MessageCircle } from 'lucide-react';
 import { BaseSidebar } from '@/components/ui/BaseSidebar';
 
-const navItems = [
+const mainNavItems = [
   { title: "Dashboard", icon: LayoutDashboard, url: "/dashboard" },
   { title: "Projects", icon: FolderKanban, url: "/dashboard/projects" },
   { title: "Reports", icon: FileText, url: "/reports" },
@@ -14,13 +14,22 @@ const navItems = [
   { title: "Chat", icon: MessageCircle, url: "/chat" },
 ];
 
-interface MainSidebarProps {
+const dashboardNavItems = [
+  { title: "Dashboard", icon: LayoutDashboard, url: "/dashboard" },
+  { title: "Projects", icon: FolderKanban, url: "/dashboard/projects" },
+  { title: "Reports", icon: FileText, url: "/dashboard/reports" },
+  { title: "Settings", icon: Settings, url: "/dashboard/settings" },
+];
+
+interface AppSidebarProps {
   open: boolean;
   onToggle: () => void;
+  variant: 'main' | 'dashboard';
 }
 
-export function MainSidebar({ open, onToggle }: MainSidebarProps) {
+export function AppSidebar({ open, onToggle, variant }: AppSidebarProps) {
   const pathname = usePathname();
+  const navItems = variant === 'main' ? mainNavItems : dashboardNavItems;
 
   const itemsWithActive = navItems.map(item => ({
     ...item,
@@ -32,7 +41,7 @@ export function MainSidebar({ open, onToggle }: MainSidebarProps) {
       navItems={itemsWithActive}
       open={open}
       onToggle={onToggle}
-      title="AI Practice Hub"
+      title={variant === 'main' ? "AI Practice Hub" : "Dashboard"}
     />
   );
 }

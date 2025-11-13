@@ -1,5 +1,5 @@
-import { DashboardLayout } from '@/components/dashboard/DashboardLayout';
+import { AppLayout } from '@/components/layout/AppLayout';
 
 export default function Layout({ children }: { children: React.ReactNode }) {
-  return <DashboardLayout>{children}</DashboardLayout>;
+  return <AppLayout sidebarVariant="dashboard">{children}</AppLayout>;
 }

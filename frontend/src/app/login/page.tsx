@@ -1,9 +1,10 @@
 "use client";
-import { useState } from "react";
-import { useAuth } from "@/hooks/useAuth";
-import { AuthForm } from "@/components/auth/AuthForm";
-import { Input } from "@/components/ui/Input";
-import { Button } from "@/components/ui/Button";
+
+import { useState } from 'react';
+import { useAuth } from '@/hooks/useAuth';
+import { AuthForm } from '@/components/auth/AuthForm';
+import { Input } from '@/components/ui/Input';
+import { Button } from '@/components/ui/Button';
 
 export default function LoginPage() {
   const { login } = useAuth();
