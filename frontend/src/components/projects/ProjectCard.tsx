@@ -1,12 +1,13 @@
 "use client";
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/badge';
 import { Project } from '@/types/project';
 import { TestTube, MessageCircle, Calendar } from 'lucide-react';
+import { TestingSessionModal } from '@/components/testing/TestingSessionModal';
 
 interface ProjectCardProps {
   project: Project;
@@ -14,9 +15,10 @@ interface ProjectCardProps {
 
 export function ProjectCard({ project }: ProjectCardProps) {
   const router = useRouter();
+  const [showTestingModal, setShowTestingModal] = useState(false);
 
   const handleStartTesting = () => {
-    router.push(`/dashboard/projects/${project.id}/testing`);
+    setShowTestingModal(true);
   };
 
   const handleOpenChat = () => {
@@ -74,7 +76,8 @@ export function ProjectCard({ project }: ProjectCardProps) {
             className="flex-1 flex items-center gap-2 bg-blue-500 text-white border border-blue-500"
             variant="default"
           >
-            Start Testing
+            <TestTube size={14} />
+            Quick Test
           </Button>
           <Button
             onClick={handleOpenChat}
@@ -100,6 +103,13 @@ export function ProjectCard({ project }: ProjectCardProps) {
           </div>
         </div>
       </CardContent>
+
+      {/* Testing Session Modal */}
+      <TestingSessionModal
+        projectId={project.id}
+        open={showTestingModal}
+        onClose={() => setShowTestingModal(false)}
+      />
     </Card>
   );
 }

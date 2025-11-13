@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
@@ -11,11 +12,14 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { useProject } from '@/hooks/useProject';
 import { Project } from '@/types/project';
 import { MessageCircle, Plus, TestTube } from 'lucide-react';
+import { TestingSessionModal } from '@/components/testing/TestingSessionModal';
 
 export default function ProjectsPage() {
   const { getProjects, createProject, loading, error } = useProject();
+  const router = useRouter();
   const [projects, setProjects] = useState<Project[]>([]);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [testingModalProjectId, setTestingModalProjectId] = useState<number | null>(null);
   const [newProject, setNewProject] = useState({
     name: '',
     description: '',
@@ -72,7 +76,8 @@ export default function ProjectsPage() {
   }
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="min-h-screen bg-background overflow-y-auto">
+      <div className="p-6 space-y-6">
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold text-foreground">Projects</h1>
@@ -103,13 +108,14 @@ export default function ProjectsPage() {
                   Status: <span className="capitalize">{project.status}</span>
                 </p>
                 <div className="flex gap-2">
-                  <Link href={`/dashboard/projects/${project.id}/testing`}>
-                    <Button className="flex-1 bg-blue-500 text-white border border-blue-500">
-                      <TestTube className="w-4 h-4 mr-2" />
-                      Start Testing
-                    </Button>
-                  </Link>
-                  <Button variant="outline" className="flex-1">
+                  <Button 
+                    className="flex-1 bg-blue-500 text-white border border-blue-500"
+                    onClick={() => setTestingModalProjectId(project.id)}
+                  >
+                    <TestTube className="w-4 h-4 mr-2" />
+                    Quick Test
+                  </Button>
+                  <Button variant="outline" className="flex-1" onClick={() => router.push(`/dashboard/projects/${project.id}/sessions`)}>
                     View Details
                   </Button>
                   <Link href={`/chat?projectId=${project.id}`}>
@@ -171,6 +177,14 @@ export default function ProjectsPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Testing Session Modal */}
+      <TestingSessionModal
+        projectId={testingModalProjectId || 0}
+        open={testingModalProjectId !== null}
+        onClose={() => setTestingModalProjectId(null)}
+      />
+    </div>
     </div>
   );
 }

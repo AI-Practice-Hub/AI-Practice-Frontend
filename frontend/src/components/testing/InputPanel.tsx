@@ -38,8 +38,8 @@ export function InputPanel({ onSubmit, isProcessing, disabled = false }: InputPa
 
   return (
     <div className="h-full flex flex-col">
-      <Card className="flex-1 flex flex-col">
-        <CardHeader>
+      <Card className="h-full flex flex-col">
+        <CardHeader className="flex-shrink-0">
           <CardTitle className="flex items-center gap-2">
             <Upload size={20} />
             Input Requirements
@@ -49,7 +49,7 @@ export function InputPanel({ onSubmit, isProcessing, disabled = false }: InputPa
           </p>
         </CardHeader>
 
-        <CardContent className="flex-1 flex flex-col gap-4">
+        <CardContent className="flex-1 flex flex-col gap-4 overflow-y-auto">
           {/* File Upload Zone */}
           <div className="flex-shrink-0">
             <FileUploadZone
@@ -92,8 +92,8 @@ export function InputPanel({ onSubmit, isProcessing, disabled = false }: InputPa
           )}
 
           {/* Text Input */}
-          <div className="flex-1 flex flex-col">
-            <label className="text-sm font-medium mb-2">
+          <div className="flex-1 flex flex-col min-h-0">
+            <label className="text-sm font-medium mb-2 flex-shrink-0">
               Testing Requirements
             </label>
             <Textarea
@@ -103,7 +103,7 @@ export function InputPanel({ onSubmit, isProcessing, disabled = false }: InputPa
               className="flex-1 min-h-[200px] resize-none"
               disabled={disabled || isProcessing}
             />
-            <div className="flex justify-between items-center mt-2">
+            <div className="flex justify-between items-center mt-2 flex-shrink-0">
               <span className="text-xs text-muted-foreground">
                 {text.length} characters
               </span>

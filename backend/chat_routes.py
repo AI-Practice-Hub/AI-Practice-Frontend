@@ -309,3 +309,18 @@ async def send_message(
         test_case=TEST_CASES if response_type == "test-case-approval" else None,
         timestamp=bot_msg.timestamp
     )
+
+@router.get("/chat/{chat_id}/test-cases", response_model=List[dict])
+def get_test_cases(chat_id: int, db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
+    """
+    Get test cases for a specific chat session
+    For now returns dummy test cases, later can be enhanced to generate based on chat history
+    """
+    # Verify user owns the chat (via project)
+    chat = db.query(Chat).join(Chat.project).filter(Chat.id == chat_id, Project.user_id == user_id).first()
+    if not chat:
+        raise HTTPException(status_code=404, detail="Chat not found or unauthorized")
+    
+    # For now, return dummy test cases
+    # TODO: Later, analyze chat history to generate relevant test cases
+    return TEST_CASES

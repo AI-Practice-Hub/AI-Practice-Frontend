@@ -7,7 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import ReactMarkdown from 'react-markdown';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
-import { MessageSquare, Send, Copy, Download, TestTube } from 'lucide-react';
+import { MessageSquare, Send, Download, TestTube } from 'lucide-react';
 
 interface Response {
   type: 'text' | 'test-cases' | 'question';
@@ -32,12 +32,17 @@ export function OutputPanel({ responses, isProcessing, onSendFollowUp }: OutputP
     }
   };
 
-  const handleCopyResponse = (content: string) => {
-    navigator.clipboard.writeText(content);
-  };
+  const handleExportConversation = () => {
+    const conversationContent = responses.map((response, index) => {
+      const typeLabel = response.type === 'test-cases' ? 'Test Cases Generated' :
+                       response.type === 'question' ? 'Question' : 'Analysis';
+      return `--- ${typeLabel} ---\n${response.content}\n\n`;
+    }).join('');
 
-  const handleDownloadResponse = (content: string, filename: string = 'response.txt') => {
-    const blob = new Blob([content], { type: 'text/plain' });
+    const timestamp = new Date().toISOString().split('T')[0];
+    const filename = `testing-conversation-${timestamp}.txt`;
+
+    const blob = new Blob([conversationContent], { type: 'text/plain' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
@@ -56,44 +61,24 @@ export function OutputPanel({ responses, isProcessing, onSendFollowUp }: OutputP
       <div key={index} className="mb-6">
         <Card>
           <CardHeader className="pb-3">
-            <div className="flex items-center justify-between">
-              <CardTitle className="flex items-center gap-2 text-base">
-                {response.type === 'test-cases' ? (
-                  <>
-                    <TestTube size={16} />
-                    Test Cases Generated
-                  </>
-                ) : response.type === 'question' ? (
-                  <>
-                    <MessageSquare size={16} />
-                    Question
-                  </>
-                ) : (
-                  <>
-                    <MessageSquare size={16} />
-                    Analysis
-                  </>
-                )}
-              </CardTitle>
-              <div className="flex gap-1">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => handleCopyResponse(response.content)}
-                  className="h-8 w-8 p-0"
-                >
-                  <Copy size={14} />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => handleDownloadResponse(response.content)}
-                  className="h-8 w-8 p-0"
-                >
-                  <Download size={14} />
-                </Button>
-              </div>
-            </div>
+            <CardTitle className="flex items-center gap-2 text-base">
+              {response.type === 'test-cases' ? (
+                <>
+                  <TestTube size={16} />
+                  Test Cases Generated
+                </>
+              ) : response.type === 'question' ? (
+                <>
+                  <MessageSquare size={16} />
+                  Question
+                </>
+              ) : (
+                <>
+                  <MessageSquare size={16} />
+                  Analysis
+                </>
+              )}
+            </CardTitle>
           </CardHeader>
 
           <CardContent>
@@ -175,18 +160,33 @@ export function OutputPanel({ responses, isProcessing, onSendFollowUp }: OutputP
 
   return (
     <div className="h-full flex flex-col">
-      <Card className="flex-1 flex flex-col">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <MessageSquare size={20} />
-            AI Analysis & Results
-          </CardTitle>
-          <p className="text-sm text-muted-foreground">
-            AI will analyze your requirements and generate comprehensive test cases
-          </p>
+      <Card className="h-full flex flex-col">
+        <CardHeader className="flex-shrink-0">
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="flex items-center gap-2">
+                <MessageSquare size={20} />
+                AI Analysis & Results
+              </CardTitle>
+              <p className="text-sm text-muted-foreground">
+                AI will analyze your requirements and generate comprehensive test cases
+              </p>
+            </div>
+            {responses.length > 0 && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleExportConversation}
+                className="flex items-center gap-2"
+              >
+                <Download size={16} />
+                Export Chat
+              </Button>
+            )}
+          </div>
         </CardHeader>
 
-        <CardContent className="flex-1 flex flex-col">
+        <CardContent className="flex-1 flex flex-col overflow-hidden">
           {responses.length === 0 && !isProcessing ? (
             <div className="flex-1 flex items-center justify-center text-center">
               <div className="space-y-4">
@@ -200,7 +200,7 @@ export function OutputPanel({ responses, isProcessing, onSendFollowUp }: OutputP
               </div>
             </div>
           ) : (
-            <div className="flex-1 overflow-y-auto space-y-4">
+            <div className="flex-1 overflow-y-auto space-y-4 pr-2">
               {responses.map((response, index) => renderResponse(response, index))}
 
               {isProcessing && (
