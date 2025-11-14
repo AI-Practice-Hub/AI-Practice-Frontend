@@ -81,10 +81,8 @@ export default function TestingPage() {
       // Initial submission
       await handleStartTesting(input);
     } else {
-      // Follow-up - use text as message
-      if (input.text) {
-        await handleSendFollowUp(input.text);
-      }
+      // Follow-up - send both text and files
+      await handleSendFollowUp(input);
     }
   };
 
@@ -108,7 +106,7 @@ export default function TestingPage() {
       // Send message via chat API
       const response = await api.post(`/chat/${chatId}/send-message?invoke_type=new`, formData, {
         headers: {
-          'Content-Type': 'multipart/form-data',
+          'Content-Type': undefined, // Let browser set proper multipart boundary
         },
       });
 
@@ -155,7 +153,7 @@ export default function TestingPage() {
     }
   };
 
-  const handleSendFollowUp = async (message: string) => {
+  const handleSendFollowUp = async (input: { text?: string; files?: File[] }) => {
     if (!chatId) return;
 
     setIsProcessing(true);
@@ -163,12 +161,19 @@ export default function TestingPage() {
       // Create FormData for follow-up message
       const formData = new FormData();
       formData.append('invoke_type', 'resume');
-      formData.append('content', message);
+      if (input.text) {
+        formData.append('content', input.text);
+      }
+      if (input.files && input.files.length > 0) {
+        input.files.forEach((file, index) => {
+          formData.append('files', file);
+        });
+      }
 
       // Send follow-up message via chat API
       const response = await api.post(`/chat/${chatId}/send-message?invoke_type=resume`, formData, {
         headers: {
-          'Content-Type': 'multipart/form-data',
+          'Content-Type': undefined, // Let browser set proper multipart boundary
         },
       });
 
@@ -243,6 +248,7 @@ export default function TestingPage() {
             onSubmit={handleSubmit}
             isProcessing={isProcessing}
             disabled={false}
+            isFollowUp={responses.length > 0}
           />
         </div>
 
@@ -251,7 +257,6 @@ export default function TestingPage() {
           <OutputPanel
             responses={responses}
             isProcessing={isProcessing}
-            onSendFollowUp={handleSendFollowUp}
           />
         </div>
       </div>

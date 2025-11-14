@@ -19,18 +19,10 @@ interface Response {
 interface OutputPanelProps {
   responses: Response[];
   isProcessing: boolean;
-  onSendFollowUp: (message: string) => void;
 }
 
-export function OutputPanel({ responses, isProcessing, onSendFollowUp }: OutputPanelProps) {
+export function OutputPanel({ responses, isProcessing }: OutputPanelProps) {
   const [followUpMessage, setFollowUpMessage] = useState('');
-
-  const handleSendFollowUp = () => {
-    if (followUpMessage.trim()) {
-      onSendFollowUp(followUpMessage.trim());
-      setFollowUpMessage('');
-    }
-  };
 
   const handleExportConversation = () => {
     const conversationContent = responses.map((response, index) => {
@@ -54,9 +46,6 @@ export function OutputPanel({ responses, isProcessing, onSendFollowUp }: OutputP
   };
 
   const renderResponse = (response: Response, index: number) => {
-    const isLastResponse = index === responses.length - 1;
-    const needsFollowUp = response.type === 'question' && isLastResponse && !isProcessing;
-
     return (
       <div key={index} className="mb-6">
         <Card>
@@ -130,28 +119,6 @@ export function OutputPanel({ responses, isProcessing, onSendFollowUp }: OutputP
               </div>
             )}
 
-            {/* Follow-up input for questions */}
-            {needsFollowUp && (
-              <div className="mt-4 pt-4 border-t">
-                <div className="space-y-3">
-                  <label className="text-sm font-medium">Your Response:</label>
-                  <Textarea
-                    value={followUpMessage}
-                    onChange={(e) => setFollowUpMessage(e.target.value)}
-                    placeholder="Provide more details..."
-                    rows={3}
-                  />
-                  <Button
-                    onClick={handleSendFollowUp}
-                    disabled={!followUpMessage.trim()}
-                    className="flex items-center gap-2"
-                  >
-                    <Send size={14} />
-                    Send Response
-                  </Button>
-                </div>
-              </div>
-            )}
           </CardContent>
         </Card>
       </div>

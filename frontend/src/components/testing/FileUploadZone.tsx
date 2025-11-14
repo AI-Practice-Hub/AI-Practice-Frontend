@@ -90,17 +90,6 @@ export function FileUploadZone({
             </div>
           )}
         </div>
-
-        {!disabled && (
-          <Button
-            type="button"
-            variant="outline"
-            className="mt-4"
-            onClick={(e) => e.stopPropagation()}
-          >
-            Browse Files
-          </Button>
-        )}
       </div>
     </Card>
   );

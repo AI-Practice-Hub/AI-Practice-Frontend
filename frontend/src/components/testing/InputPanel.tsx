@@ -11,6 +11,7 @@ interface InputPanelProps {
   onSubmit: (input: { text?: string; files?: File[] }) => void;
   isProcessing: boolean;
   disabled?: boolean;
+  isFollowUp?: boolean;
 }
 
 export interface InputPanelRef {
@@ -18,7 +19,7 @@ export interface InputPanelRef {
 }
 
 export const InputPanel = forwardRef<InputPanelRef, InputPanelProps>(
-  ({ onSubmit, isProcessing, disabled = false }, ref) => {
+  ({ onSubmit, isProcessing, disabled = false, isFollowUp = false }, ref) => {
     const [text, setText] = useState('');
     const [files, setFiles] = useState<File[]>([]);
 
@@ -135,12 +136,12 @@ export const InputPanel = forwardRef<InputPanelRef, InputPanelProps>(
               {isProcessing ? (
                 <>
                   <div className="animate-spin rounded-full h-4 w-4 border-2 border-current border-t-transparent" />
-                  Analyzing Requirements...
+                  {isFollowUp ? 'Sending...' : 'Analyzing Requirements...'}
                 </>
               ) : (
                 <>
                   <Send size={16} />
-                  Start Testing
+                  {isFollowUp ? 'Send Message' : 'Start Testing'}
                 </>
               )}
             </Button>
