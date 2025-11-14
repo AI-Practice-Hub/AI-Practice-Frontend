@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, forwardRef, useImperativeHandle } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/Button';
 import { Textarea } from '@/components/ui/textarea';
@@ -13,18 +13,32 @@ interface InputPanelProps {
   disabled?: boolean;
 }
 
-export function InputPanel({ onSubmit, isProcessing, disabled = false }: InputPanelProps) {
-  const [text, setText] = useState('');
-  const [files, setFiles] = useState<File[]>([]);
+export interface InputPanelRef {
+  clearInputs: () => void;
+}
 
-  const handleSubmit = useCallback(() => {
-    if (disabled || isProcessing || (!text.trim() && files.length === 0)) return;
+export const InputPanel = forwardRef<InputPanelRef, InputPanelProps>(
+  ({ onSubmit, isProcessing, disabled = false }, ref) => {
+    const [text, setText] = useState('');
+    const [files, setFiles] = useState<File[]>([]);
 
-    onSubmit({
-      text: text.trim() || undefined,
-      files: files.length > 0 ? files : undefined,
-    });
-  }, [text, files, onSubmit, disabled, isProcessing]);
+    const clearInputs = useCallback(() => {
+      setText('');
+      setFiles([]);
+    }, []);
+
+    useImperativeHandle(ref, () => ({
+      clearInputs,
+    }), [clearInputs]);
+
+    const handleSubmit = useCallback(() => {
+      if (disabled || isProcessing || (!text.trim() && files.length === 0)) return;
+
+      onSubmit({
+        text: text.trim() || undefined,
+        files: files.length > 0 ? files : undefined,
+      });
+    }, [text, files, onSubmit, disabled, isProcessing]);
 
   const handleFilesSelected = useCallback((selectedFiles: File[]) => {
     setFiles(prev => [...prev, ...selectedFiles]);
@@ -135,4 +149,6 @@ export function InputPanel({ onSubmit, isProcessing, disabled = false }: InputPa
       </Card>
     </div>
   );
-}
+});
+
+InputPanel.displayName = 'InputPanel';

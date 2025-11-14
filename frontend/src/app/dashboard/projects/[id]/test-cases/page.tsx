@@ -5,7 +5,8 @@ import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/Button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Download, Play, CheckCircle, AlertCircle } from 'lucide-react';
+import { Checkbox } from '@/components/ui/checkbox';
+import { ArrowLeft, Download, Play, CheckCircle, AlertCircle, ChevronDown, ChevronRight } from 'lucide-react';
 import { api } from '@/lib/api';
 
 interface TestCase {
@@ -32,6 +33,7 @@ export default function TestCasesPage() {
   const [selectedCases, setSelectedCases] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
   const [executing, setExecuting] = useState(false);
+  const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     if (chatId) {
@@ -57,6 +59,18 @@ export default function TestCasesPage() {
 
   const handleBackToProjects = () => {
     router.push('/dashboard/projects');
+  };
+
+  const toggleRowExpansion = (testCaseId: string) => {
+    setExpandedRows(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(testCaseId)) {
+        newSet.delete(testCaseId);
+      } else {
+        newSet.add(testCaseId);
+      }
+      return newSet;
+    });
   };
 
   const toggleTestCaseSelection = (testCaseId: string) => {
@@ -110,6 +124,19 @@ export default function TestCasesPage() {
     linkElement.click();
   };
 
+  const getStatusColor = (status: string) => {
+    switch (status.toLowerCase()) {
+      case 'pass':
+        return 'bg-green-100 text-green-800 border-green-200';
+      case 'fail':
+        return 'bg-red-100 text-red-800 border-red-200';
+      case 'pending':
+        return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+      default:
+        return 'bg-gray-100 text-gray-800 border-gray-200';
+    }
+  };
+
   const getPriorityColor = (priority: string) => {
     switch (priority.toLowerCase()) {
       case 'high': return 'bg-red-100 text-red-800 border-red-200';
@@ -124,6 +151,14 @@ export default function TestCasesPage() {
       case 'pass': return <CheckCircle className="w-4 h-4 text-green-600" />;
       case 'fail': return <AlertCircle className="w-4 h-4 text-red-600" />;
       default: return <Play className="w-4 h-4 text-gray-600" />;
+    }
+  };
+
+  const handleSelectAll = (checked: boolean) => {
+    if (checked) {
+      setSelectedCases(new Set(testCases.map(tc => tc.test_case_id)));
+    } else {
+      setSelectedCases(new Set());
     }
   };
 
@@ -220,74 +255,108 @@ export default function TestCasesPage() {
               </Card>
             </div>
 
-            {/* Test Cases List */}
-            <div className="space-y-4">
-              {testCases.map((testCase, index) => (
-                <Card key={testCase.test_case_id} className="relative">
-                  <CardHeader className="pb-3">
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-3 mb-2">
-                          <input
-                            type="checkbox"
-                            checked={selectedCases.has(testCase.test_case_id)}
-                            onChange={() => toggleTestCaseSelection(testCase.test_case_id)}
-                            className="rounded border-gray-300"
-                          />
-                          <CardTitle className="text-lg">{testCase.title}</CardTitle>
-                          {getStatusIcon(testCase.status)}
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Badge variant="outline" className={getPriorityColor(testCase.priority)}>
-                            {testCase.priority}
-                          </Badge>
-                          <span className="text-sm text-muted-foreground">
-                            {testCase.module_feature}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  </CardHeader>
+            {/* Test Cases Table */}
+            <div className="border rounded-lg overflow-hidden">
+              <table className="w-full">
+                <thead className="bg-muted/50">
+                  <tr>
+                    <th className="w-12 p-3 text-left">
+                      <Checkbox
+                        checked={selectedCases.size === testCases.length && testCases.length > 0}
+                        onCheckedChange={handleSelectAll}
+                      />
+                    </th>
+                    <th className="w-8 p-3"></th>
+                    <th className="p-3 text-left font-semibold">Test Case ID</th>
+                    <th className="p-3 text-left font-semibold min-w-[200px]">Title</th>
+                    <th className="p-3 text-left font-semibold">Module</th>
+                    <th className="p-3 text-left font-semibold">Priority</th>
+                    <th className="p-3 text-left font-semibold">Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {testCases.map((testCase) => {
+                    const isSelected = selectedCases.has(testCase.test_case_id);
+                    const isExpanded = expandedRows.has(testCase.test_case_id);
 
-                  <CardContent className="space-y-4">
-                    {/* Preconditions */}
-                    <div>
-                      <h4 className="font-semibold text-sm mb-1">Preconditions:</h4>
-                      <p className="text-sm text-muted-foreground">{testCase.preconditions}</p>
-                    </div>
-
-                    {/* Test Steps */}
-                    <div>
-                      <h4 className="font-semibold text-sm mb-1">Test Steps:</h4>
-                      <div className="text-sm text-muted-foreground whitespace-pre-line">
-                        {testCase.test_steps}
-                      </div>
-                    </div>
-
-                    {/* Test Data */}
-                    {testCase.test_data && (
-                      <div>
-                        <h4 className="font-semibold text-sm mb-1">Test Data:</h4>
-                        <p className="text-sm text-muted-foreground">{testCase.test_data}</p>
-                      </div>
-                    )}
-
-                    {/* Expected Result */}
-                    <div>
-                      <h4 className="font-semibold text-sm mb-1">Expected Result:</h4>
-                      <p className="text-sm text-muted-foreground">{testCase.expected_result}</p>
-                    </div>
-
-                    {/* Actual Result */}
-                    {testCase.actual_result && (
-                      <div>
-                        <h4 className="font-semibold text-sm mb-1">Actual Result:</h4>
-                        <p className="text-sm text-muted-foreground">{testCase.actual_result}</p>
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-              ))}
+                    return (
+                      <React.Fragment key={testCase.test_case_id}>
+                        <tr className={`border-t hover:bg-muted/30 ${isSelected ? 'bg-primary/5' : ''}`}>
+                          <td className="p-3">
+                            <Checkbox
+                              checked={isSelected}
+                              onCheckedChange={() => toggleTestCaseSelection(testCase.test_case_id)}
+                            />
+                          </td>
+                          <td className="p-3">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => toggleRowExpansion(testCase.test_case_id)}
+                              className="h-6 w-6 p-0"
+                            >
+                              {isExpanded ? (
+                                <ChevronDown className="h-4 w-4" />
+                              ) : (
+                                <ChevronRight className="h-4 w-4" />
+                              )}
+                            </Button>
+                          </td>
+                          <td className="p-3 font-mono text-sm">{testCase.test_case_id}</td>
+                          <td className="p-3 font-medium">{testCase.title}</td>
+                          <td className="p-3 text-sm">{testCase.module_feature || '-'}</td>
+                          <td className="p-3">
+                            <Badge variant="outline" className={getPriorityColor(testCase.priority)}>
+                              {testCase.priority}
+                            </Badge>
+                          </td>
+                          <td className="p-3">
+                            <Badge variant="outline" className={getStatusColor(testCase.status)}>
+                              {testCase.status}
+                            </Badge>
+                          </td>
+                        </tr>
+                        {isExpanded && (
+                          <tr className="bg-muted/20">
+                            <td colSpan={7} className="p-4 border-t">
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                                {testCase.preconditions && (
+                                  <div>
+                                    <strong className="text-muted-foreground">Preconditions:</strong>
+                                    <p className="mt-1">{testCase.preconditions}</p>
+                                  </div>
+                                )}
+                                {testCase.test_steps && (
+                                  <div>
+                                    <strong className="text-muted-foreground">Test Steps:</strong>
+                                    <div className="mt-1 whitespace-pre-line">{testCase.test_steps}</div>
+                                  </div>
+                                )}
+                                {testCase.test_data && (
+                                  <div>
+                                    <strong className="text-muted-foreground">Test Data:</strong>
+                                    <p className="mt-1">{testCase.test_data}</p>
+                                  </div>
+                                )}
+                                <div>
+                                  <strong className="text-muted-foreground">Expected Result:</strong>
+                                  <p className="mt-1">{testCase.expected_result}</p>
+                                </div>
+                                {testCase.actual_result && (
+                                  <div>
+                                    <strong className="text-muted-foreground">Actual Result:</strong>
+                                    <p className="mt-1">{testCase.actual_result}</p>
+                                  </div>
+                                )}
+                              </div>
+                            </td>
+                          </tr>
+                        )}
+                      </React.Fragment>
+                    );
+                  })}
+                </tbody>
+              </table>
             </div>
           </div>
         )}

@@ -1,11 +1,11 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/Button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ArrowLeft, FileText, MessageSquare, TestTube } from 'lucide-react';
-import { InputPanel } from '@/components/testing/InputPanel';
+import { InputPanel, InputPanelRef } from '@/components/testing/InputPanel';
 import { OutputPanel } from '@/components/testing/OutputPanel';
 import { TestingHeader } from '@/components/testing/TestingHeader';
 import { api } from '@/lib/api';
@@ -21,6 +21,7 @@ export default function TestingPage() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [responses, setResponses] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const inputPanelRef = useRef<InputPanelRef>(null);
 
   // Load chat history on mount
   useEffect(() => {
@@ -36,8 +37,11 @@ export default function TestingPage() {
       const response = await api.get(`/chat/${chatId}/messages`);
       const messages = response.data;
 
-      // Convert messages to response format
-      const formattedResponses = messages.map((msg: any) => ({
+      // Filter to only include AI responses (bot messages), exclude user messages
+      const aiMessages = messages.filter((msg: any) => msg.sender === 'bot');
+
+      // Convert AI messages to response format
+      const formattedResponses = aiMessages.map((msg: any) => ({
         id: msg.id,
         type: msg.sender === 'bot' ? 'ai' : 'user',
         content: msg.content,
@@ -127,6 +131,9 @@ export default function TestingPage() {
 
       setResponses(prev => [...prev, formattedResponse]);
 
+      // Clear input fields after successful submission
+      inputPanelRef.current?.clearInputs();
+
       // Check for test case generation - auto redirect
       // Test cases are returned when content is an array OR invoke_type is test-case-approval
       if (Array.isArray(newMessage.content) || newMessage.invoke_type === 'test-case-approval') {
@@ -184,6 +191,9 @@ export default function TestingPage() {
 
       setResponses(prev => [...prev, formattedResponse]);
 
+      // Clear input fields after successful submission
+      inputPanelRef.current?.clearInputs();
+
       // Check for test case generation - auto redirect
       // Test cases are returned when content is an array OR invoke_type is test-case-approval
       if (Array.isArray(newMessage.content) || newMessage.invoke_type === 'test-case-approval') {
@@ -229,6 +239,7 @@ export default function TestingPage() {
         {/* Input Panel */}
         <div className="w-full lg:w-1/2 p-6 flex flex-col overflow-hidden">
           <InputPanel
+            ref={inputPanelRef}
             onSubmit={handleSubmit}
             isProcessing={isProcessing}
             disabled={false}

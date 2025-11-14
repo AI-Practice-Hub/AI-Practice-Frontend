@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, MessageSquare, Calendar, Play, Trash2 } from 'lucide-react';
 import { api } from '@/lib/api';
+import { TestingSessionModal } from '@/components/testing/TestingSessionModal';
 
 interface ChatSession {
   id: number;
@@ -24,6 +25,7 @@ export default function ProjectSessionsPage() {
   const [sessions, setSessions] = useState<ChatSession[]>([]);
   const [loading, setLoading] = useState(true);
   const [projectName, setProjectName] = useState('');
+  const [isNewSessionModalOpen, setIsNewSessionModalOpen] = useState(false);
 
   useEffect(() => {
     loadSessions();
@@ -76,6 +78,10 @@ export default function ProjectSessionsPage() {
     }
   };
 
+  const handleNewSessionCreated = () => {
+    loadSessions(); // Refresh the sessions list
+  };
+
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
@@ -115,7 +121,7 @@ export default function ProjectSessionsPage() {
             </div>
           </div>
           <Button
-            onClick={() => router.push(`/dashboard/projects/${projectId}/testing`)}
+            onClick={() => setIsNewSessionModalOpen(true)}
             className="bg-blue-500 text-white"
           >
             <MessageSquare className="w-4 h-4 mr-2" />
@@ -134,7 +140,7 @@ export default function ProjectSessionsPage() {
               <p className="text-muted-foreground text-center mb-4">
                 You haven't created any testing sessions for this project yet.
               </p>
-              <Button onClick={() => router.push(`/dashboard/projects/${projectId}/testing`)}>
+              <Button onClick={() => setIsNewSessionModalOpen(true)}>
                 <MessageSquare className="w-4 h-4 mr-2" />
                 Start Your First Session
               </Button>
@@ -230,6 +236,13 @@ export default function ProjectSessionsPage() {
           </div>
         )}
       </div>
+
+      {/* New Session Modal */}
+      <TestingSessionModal
+        projectId={projectId}
+        open={isNewSessionModalOpen}
+        onClose={() => setIsNewSessionModalOpen(false)}
+      />
     </div>
   );
 }
