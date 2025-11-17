@@ -24,7 +24,12 @@ TEST_CASES = [
         "module_feature": "Authentication",
         "priority": "High",
         "preconditions": "User is registered in the system; the system is online.",
-        "test_steps": "1. Navigate to the login page.\n2. Enter a valid username in the 'Username' field.\n3. Enter a valid password in the 'Password' field.\n4. Click the 'Login' button.",
+        "test_steps": [
+            "Navigate to the login page.",
+            "Enter a valid username in the 'Username' field.",
+            "Enter a valid password in the 'Password' field.",
+            "Click the 'Login' button."
+        ],
         "test_data": "Username: testuser@example.com, Password: SecureP@ss123.",
         "expected_result": "User is successfully redirected to the main dashboard/homepage.",
         "actual_result": "User is redirected to the main dashboard.",
@@ -36,7 +41,14 @@ TEST_CASES = [
         "module_feature": "Authentication",
         "priority": "High",
         "preconditions": "User has a registered email address; email service is operational.",
-        "test_steps": "1. Navigate to the login page.\n2. Click 'Forgot Password' link.\n3. Enter registered email address.\n4. Check email for reset link.\n5. Click reset link and set new password.\n6. Attempt login with new password.",
+        "test_steps": [
+            "Navigate to the login page.",
+            "Click 'Forgot Password' link.",
+            "Enter registered email address.",
+            "Check email for reset link.",
+            "Click reset link and set new password.",
+            "Attempt login with new password."
+        ],
         "test_data": "Email: testuser@example.com, New Password: NewSecureP@ss456.",
         "expected_result": "Password is successfully reset and user can login with new credentials.",
         "actual_result": "Password reset email sent successfully.",
@@ -48,7 +60,13 @@ TEST_CASES = [
         "module_feature": "Search",
         "priority": "Medium",
         "preconditions": "Products are available in the system; search functionality is enabled.",
-        "test_steps": "1. Navigate to the search page.\n2. Enter search term 'laptop'.\n3. Apply price filter ($500-$1000).\n4. Sort by 'Price: Low to High'.\n5. Verify search results match criteria.",
+        "test_steps": [
+            "Navigate to the search page.",
+            "Enter search term 'laptop'.",
+            "Apply price filter ($500-$1000).",
+            "Sort by 'Price: Low to High'.",
+            "Verify search results match criteria."
+        ],
         "test_data": "Search Term: laptop, Price Range: $500-$1000.",
         "expected_result": "Search results display only laptops within the specified price range, sorted correctly.",
         "actual_result": "Search results filtered and sorted as expected.",
@@ -60,7 +78,13 @@ TEST_CASES = [
         "module_feature": "Shopping Cart",
         "priority": "High",
         "preconditions": "User is logged in; products are available for purchase.",
-        "test_steps": "1. Add 2 items to cart.\n2. Update quantity of first item to 3.\n3. Remove second item from cart.\n4. Proceed to checkout.\n5. Complete purchase.",
+        "test_steps": [
+            "Add 2 items to cart.",
+            "Update quantity of first item to 3.",
+            "Remove second item from cart.",
+            "Proceed to checkout.",
+            "Complete purchase."
+        ],
         "test_data": "Items: Laptop ($800), Mouse ($25); Payment: Credit Card.",
         "expected_result": "Cart updates correctly, checkout completes successfully.",
         "actual_result": "All cart operations work as expected.",
@@ -72,7 +96,13 @@ TEST_CASES = [
         "module_feature": "Payment",
         "priority": "Critical",
         "preconditions": "Payment gateway is configured; user has valid payment method.",
-        "test_steps": "1. Add items to cart and proceed to checkout.\n2. Enter payment information.\n3. Submit payment.\n4. Verify transaction completion.\n5. Check order confirmation.",
+        "test_steps": [
+            "Add items to cart and proceed to checkout.",
+            "Enter payment information.",
+            "Submit payment.",
+            "Verify transaction completion.",
+            "Check order confirmation."
+        ],
         "test_data": "Payment Method: Visa ****1234, Amount: $825.",
         "expected_result": "Payment processes successfully and order is confirmed.",
         "actual_result": "Payment gateway integration working correctly.",
@@ -84,7 +114,13 @@ TEST_CASES = [
         "module_feature": "User Profile",
         "priority": "Medium",
         "preconditions": "User is logged in; profile editing is enabled.",
-        "test_steps": "1. Navigate to profile settings.\n2. Update name and contact information.\n3. Upload new avatar image.\n4. Change notification preferences.\n5. Save changes.",
+        "test_steps": [
+            "Navigate to profile settings.",
+            "Update name and contact information.",
+            "Upload new avatar image.",
+            "Change notification preferences.",
+            "Save changes."
+        ],
         "test_data": "Name: John Doe, Email: john@example.com, Avatar: profile.jpg.",
         "expected_result": "Profile information updates successfully and displays correctly.",
         "actual_result": "Profile updated with new information and avatar.",

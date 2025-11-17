@@ -187,10 +187,19 @@ export function TestCaseModal({
                                   <p className="mt-1">{testCase.preconditions}</p>
                                 </div>
                               )}
-                              {testCase.test_steps && (
+                              {testCase.test_steps && testCase.test_steps.length > 0 && (
                                 <div>
                                   <strong className="text-muted-foreground">Test Steps:</strong>
-                                  <div className="mt-1 whitespace-pre-line">{testCase.test_steps}</div>
+                                  <div className="mt-1 space-y-2">
+                                    {testCase.test_steps.map((step, index) => (
+                                      <div key={index} className="flex items-start gap-2 text-sm">
+                                        <span className="font-medium text-muted-foreground min-w-[20px]">
+                                          {index + 1}.
+                                        </span>
+                                        <span>{step}</span>
+                                      </div>
+                                    ))}
+                                  </div>
                                 </div>
                               )}
                               {testCase.test_data && (
