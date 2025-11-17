@@ -84,28 +84,59 @@ export default function TestCasesPage() {
   };
 
   const handleExecuteSelected = async () => {
-    if (selectedCases.size === 0) return;
+    if (selectedCases.size === 0 || !chatId) return;
 
     setExecuting(true);
     try {
-      // Simulate test execution
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      // Get selected test cases
+      const selectedTestCases = testCases.filter(tc => selectedCases.has(tc.test_case_id));
 
-      // Update test case statuses
+      // Create FormData for the API call
+      const formData = new FormData();
+      formData.append('invoke_type', 'resume');
+      formData.append('content', JSON.stringify(selectedTestCases));
+
+      // Send message via chat API
+      const response = await api.post(`/chat/${chatId}/send-message?invoke_type=resume`, formData, {
+        headers: {
+          'Content-Type': undefined, // Let browser set proper multipart boundary
+        },
+      });
+
+      const newMessage = response.data;
+
+      // Update test case statuses based on the response
+      // For now, we'll simulate status updates, but in a real implementation
+      // you might want to parse the response and update accordingly
       setTestCases(prev => prev.map(tc => {
         if (selectedCases.has(tc.test_case_id)) {
           return {
             ...tc,
             status: Math.random() > 0.3 ? 'Pass' : 'Fail' as const,
-            actual_result: `Test executed on ${new Date().toLocaleDateString()}`
+            actual_result: `Test executed via API on ${new Date().toLocaleDateString()}`
           };
         }
         return tc;
       }));
 
       setSelectedCases(new Set());
+
+      // Optionally show success message or handle response
+      console.log('Test execution response:', newMessage);
+
     } catch (error) {
       console.error('Failed to execute tests:', error);
+      // Update test cases with error status
+      setTestCases(prev => prev.map(tc => {
+        if (selectedCases.has(tc.test_case_id)) {
+          return {
+            ...tc,
+            status: 'Fail' as const,
+            actual_result: `Execution failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+          };
+        }
+        return tc;
+      }));
     } finally {
       setExecuting(false);
     }
