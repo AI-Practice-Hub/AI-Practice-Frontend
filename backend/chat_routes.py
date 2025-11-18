@@ -20,106 +20,145 @@ router = APIRouter()
 TEST_CASES = [
         {
             "test_case_id": "TC-SEARCH-001",
-            "title": "Verify Search Bar Visibility on Homepage and Subsequent Pages (Accessibility Requirement)",
-            "module_feature": "Search Bar Visibility",
+            "title": "Verify Search Bar Visibility and Accessibility on Homepage",
+            "module_feature": "Search Bar - Visibility",
             "priority": "High",
-            "preconditions": "User is on the Myntra website (anonymous session).",
+            "preconditions": "User is on the Myntra homepage (anonymous user).",
             "test_steps": [
-                "Navigate to the base URL: https://www.myntra.com (Homepage).",
-                "Verify the presence and location of the Search bar (element with placeholder 'Search for products, brands and more').",
-                "Click on a main navigation link (e.g., 'Women' or 'Kids') to navigate to a secondary page.",
-                "Verify the Search bar remains visible and functional on the secondary page."
+                "Navigate to the Myntra homepage (https://www.myntra.com).",
+                "Verify the presence and visual prominence of the main Search Bar."
             ],
-            "test_data": "Search Bar Reference: textbox \"Search for products, brands and more\" [ref=e41].",
-            "expected_result": "The search bar must be consistently visible and accessible in the header section across the homepage and all subsequent category/secondary pages.",
+            "test_data": None,
+            "expected_result": "The Search Bar with placeholder text ('Search for products, brands and more') must be visible and enabled for input at the top of the page.",
             "actual_result": "",
             "status": "Pending"
         },
         {
             "test_case_id": "TC-SEARCH-002",
-            "title": "Validate Auto-Suggestions Content and meet the 200ms Performance Constraint (FR 7.1)",
-            "module_feature": "Auto-Suggestions Performance and Content",
-            "priority": "Critical",
-            "preconditions": "The search bar is visible on the page.",
+            "title": "Validate Auto-Suggestion Functionality (Positive Keyword & Performance NFR)",
+            "module_feature": "Search Bar - Auto-Suggestions & Performance",
+            "priority": "High",
+            "preconditions": "Search Bar is visible.",
             "test_steps": [
-                "Focus on the search bar.",
-                "Start typing a partial, common product keyword (e.g., 'red dr') and initiate a timer immediately.",
-                "Stop the timer when the suggestion box completely renders.",
-                "Verify the measured time is less than or equal to 200 milliseconds (FR 7.1).",
-                "Verify the suggestion box includes various types of suggestions: Brands, Categories, and Trending keywords."
+                "Click into the Search Bar.",
+                "Type the first three characters of a common keyword (e.g., 'red').",
+                "Measure the time taken between the third character input and the display of the suggestion list.",
+                "Verify that the suggestion dropdown appears."
             ],
-            "test_data": "Partial Keyword: 'red dr'. Expected Suggestion Categories: Brands (e.g., 'DressBerry'), Categories (e.g., 'Red Dresses'), Trending.",
-            "expected_result": "A complete list of auto-suggestions must appear within 200ms of typing. The list must contain a mix of relevant Brands, Categories, and Trending keywords.",
+            "test_data": "Keyword: 'red'",
+            "expected_result": "1. The auto-suggestion list must appear within 200ms.\n2. The suggestion list must contain relevant suggestions (e.g., Categories, Brands, or Trending terms) related to 'red'.",
             "actual_result": "",
             "status": "Pending"
         },
         {
             "test_case_id": "TC-SEARCH-003",
-            "title": "Verify Core Keyword Search and SRP Product Grid Display (Flow A, FR 7.2)",
-            "module_feature": "Keyword Search Functionality",
+            "title": "Verify Search Functionality using Complex Keyword and Enter Key Submission",
+            "module_feature": "Search Functionality",
             "priority": "High",
-            "preconditions": "The search bar is functional.",
+            "preconditions": "Search Bar is visible.",
             "test_steps": [
-                "Type a specific, multi-word keyword into the search bar.",
-                "Submit the search query (e.g., by pressing Enter).",
-                "Verify the Search Results Page (SRP) loads completely.",
-                "Verify the Search Results Page displays the 'Result Count' (e.g., 'X items found').",
-                "Validate the product grid to ensure each item shows mandatory details: Image, Title, Brand, Price, and Discount (FR 7.2)."
+                "Type a multi-word search query into the Search Bar.",
+                "Submit the search query by pressing the 'Enter' key.",
+                "Verify that the page navigates to the Search Results Page (SRP)."
             ],
-            "test_data": "Keyword: 'men shoes'",
-            "expected_result": "The SRP loads with relevant results (based on keyword, category, or brand match). The page displays the total result count and a grid where all product listings show the required metadata (Image, Title, Brand, Price, Discount).",
+            "test_data": "Search Query: 'men shoes'",
+            "expected_result": "The Search Results Page (SRP) for 'men shoes' should load successfully, displaying a list of relevant products.",
             "actual_result": "",
             "status": "Pending"
         },
         {
-            "test_case_id": "TC-SEARCH-004",
-            "title": "Validate 'No Results Found' Scenario with Recommendation Display (Edge Case 9)",
-            "module_feature": "Empty Search Results Handling",
-            "priority": "Medium",
-            "preconditions": "The search bar is functional.",
-            "test_steps": [
-                "Type a keyword that is highly unlikely to match any product.",
-                "Submit the search query.",
-                "Verify the SRP URL includes the non-matching keyword.",
-                "Verify a clear message like 'No results found' is displayed.",
-                "Verify that the system still shows a selection of recommended products (fallback list) on the page."
-            ],
-            "test_data": "Keyword: 'xyzasdfghjkl'",
-            "expected_result": "The system should explicitly notify the user that no results were found for the query and display alternative product recommendations or a fallback list to keep the user engaged.",
-            "actual_result": "",
-            "status": "Pending"
-        },
-        {
-            "test_case_id": "TC-SEARCH-005",
-            "title": "Verify Keyword Search Loading Time meets the 2-second constraint (NFR 8)",
-            "module_feature": "Search Results Page Performance",
+            "test_case_id": "TC-SRP-004",
+            "title": "Validate Core Visual Components of the Search Results Page (SRP)",
+            "module_feature": "SRP - Visual Structure",
             "priority": "High",
-            "preconditions": "The search bar is functional and connected to the backend search service.",
+            "preconditions": "User is on a non-empty SRP (e.g., after searching for 'red dress').",
             "test_steps": [
-                "Type a broad, high-volume keyword (e.g., 'red dress') into the search bar.",
-                "Initiate a timer immediately upon submitting the query (Enter/Click).",
-                "Stop the timer when the entire Search Results Page has rendered.",
-                "Verify the total loading time is less than or equal to 2 seconds (NFR 8)."
+                "Search for a keyword that yields a high number of results (e.g., 'red dress').",
+                "Verify the presence of the navigation breadcrumbs.",
+                "Verify the display of the total number of results found (e.g., 'X items found' format).",
+                "Verify the presence of the product grid area."
             ],
-            "test_data": "Keyword: 'red dress'",
-            "expected_result": "The Search Results Page (SRP) must load and render completely within 2 seconds, meeting the non-functional requirement (NFR 8).",
+            "test_data": "Search Query: 'red dress'",
+            "expected_result": "1. Breadcrumbs should be visible.\n2. The total result count in the format 'X items found' (where X > 0) must be displayed.\n3. A product grid displaying multiple products must be visible.",
             "actual_result": "",
             "status": "Pending"
         },
         {
-            "test_case_id": "TC-SEARCH-006",
-            "title": "Verify Input Sanitization for Special Characters (Edge Case 9)",
-            "module_feature": "Input Handling",
-            "priority": "Medium",
-            "preconditions": "The search bar accepts user input.",
+            "test_case_id": "TC-SRP-005",
+            "title": "Validate Product Card Structure on the SRP",
+            "module_feature": "SRP - Product Grid Details",
+            "priority": "High",
+            "preconditions": "User is on a non-empty SRP.",
             "test_steps": [
-                "Enter a keyword combined with special characters or a simulated XSS payload.",
-                "Submit the search query.",
-                "Verify that the search results are based only on the valid, recognizable keywords.",
-                "Check browser console messages and page display for any signs of script execution or malformed page content."
+                "Identify the first product card in the search results grid.",
+                "Verify that all required elements are present on that product card."
             ],
-            "test_data": "Keyword: 'nike sneakers <script>evil_code()</script>'",
-            "expected_result": "The input should be sanitized (Edge Case 9). The system should ignore or strip the invalid characters/code and return a valid SRP for 'nike sneakers'. No client-side script execution should occur, and no blank pages should appear (AC 10).",
+            "test_data": "Search Query: 'nike sneakers'",
+            "expected_result": "Each product card must display:\n1. Product Image.\n2. Product Title/Name.\n3. Product Brand.\n4. Current Price.\n5. Discount percentage (if applicable).",
+            "actual_result": "",
+            "status": "Pending"
+        },
+        {
+            "test_case_id": "TC-SRP-006",
+            "title": "Verify Anonymous User Navigation from SRP to Product Detail Page (PDP)",
+            "module_feature": "SRP - Navigation",
+            "priority": "High",
+            "preconditions": "User is on a non-empty SRP and is not logged in.",
+            "test_steps": [
+                "Search for a relevant keyword.",
+                "Click on the image or title of the first product in the grid.",
+                "Verify that the browser navigates to the Product Detail Page (PDP).",
+                "Verify that the PDP loads without forcing a login or showing a block message."
+            ],
+            "test_data": "Search Query: 'jeans'",
+            "expected_result": "The Product Detail Page (PDP) loads successfully, displaying product details (description, sizes, reviews) and allowing the anonymous user to view the page content freely.",
+            "actual_result": "",
+            "status": "Pending"
+        },
+        {
+            "test_case_id": "TC-SEARCH-007",
+            "title": "Validate SRP Relevance: Keyword Match (Brand and Title)",
+            "module_feature": "SRP - Relevance",
+            "priority": "Medium",
+            "preconditions": "User is on a non-empty SRP.",
+            "test_steps": [
+                "Perform a search using a specific Brand name.",
+                "Verify the titles and brands of the first 5-10 products displayed on the SRP."
+            ],
+            "test_data": "Search Query: 'nike'",
+            "expected_result": "The majority of the results, specifically the top results, should either have the word 'Nike' in the product title or display 'Nike' as the product brand.",
+            "actual_result": "",
+            "status": "Pending"
+        },
+        {
+            "test_case_id": "TC-SEARCH-008",
+            "title": "Validate Edge Case: Search using Special Characters/Invalid Input (Sanitization)",
+            "module_feature": "Search Functionality - Input Validation/Sanitization",
+            "priority": "Medium",
+            "preconditions": "Search Bar is visible.",
+            "test_steps": [
+                "Type a search query containing common special characters that might be used for injection or manipulation into the Search Bar.",
+                "Submit the search query.",
+                "Verify the behavior of the SRP."
+            ],
+            "test_data": "Search Query: 'shoes <script>alert('XSS')</script>'",
+            "expected_result": "1. The system must sanitize the input, preventing the execution of code (no alert box should appear).\n2. The SRP should either treat the input as literal text and show zero/irrelevant results, or successfully remove the characters and search for 'shoes'. The page should load securely and not crash.",
+            "actual_result": "",
+            "status": "Pending"
+        },
+        {
+            "test_case_id": "TC-SRP-009",
+            "title": "Validate Performance NFR: SRP Load Time",
+            "module_feature": "SRP - Performance NFR",
+            "priority": "High",
+            "preconditions": "Search Bar is visible and connection speed is adequate.",
+            "test_steps": [
+                "Clear browser cache and perform a hard reload to ensure a clean load.",
+                "Type a popular keyword into the search bar.",
+                "Measure the total time taken for the Search Results Page (SRP) to fully load and display the product grid."
+            ],
+            "test_data": "Search Query: 'tshirts'",
+            "expected_result": "The Search Results Page (SRP) must load and display results within the specified 2 seconds performance constraint.",
             "actual_result": "",
             "status": "Pending"
         }
@@ -321,7 +360,7 @@ def get_messages(chat_id: int, db: Session = Depends(get_db), user_id: int = Dep
     
     messages = db.query(Message).filter(Message.chat_id == chat_id).order_by(Message.timestamp).all()
     
-    # Convert to MessageOut with invoke_type (null for existing messages)
+    # Convert to MessageOut with invoke_type (mark test-case-approval when special bot message created by explorer)
     return [
         MessageOut(
             id=msg.id,
@@ -331,7 +370,8 @@ def get_messages(chat_id: int, db: Session = Depends(get_db), user_id: int = Dep
             file_type=msg.file_type,
             file_name=msg.file_name,
             file_url=msg.file_url,
-            invoke_type=None,  # Existing messages don't have invoke_type
+            invoke_type="test-case-approval" if msg.sender == "bot" and msg.content == "Test cases available for selection" else None,
+            test_case=TEST_CASES if msg.sender == "bot" and msg.content == "Test cases available for selection" else None,
             timestamp=msg.timestamp
         )
         for msg in messages

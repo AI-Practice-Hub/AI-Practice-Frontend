@@ -11,7 +11,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { useProject } from '@/hooks/useProject';
 import { Project } from '@/types/project';
-import { MessageCircle, Plus, TestTube } from 'lucide-react';
+import { MessageCircle, Plus, TestTube, Globe } from 'lucide-react';
+import UrlTestingModal from '@/components/testing/UrlTestingModal';
 import { TestingSessionModal } from '@/components/testing/TestingSessionModal';
 
 export default function ProjectsPage() {
@@ -20,6 +21,7 @@ export default function ProjectsPage() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [testingModalProjectId, setTestingModalProjectId] = useState<number | null>(null);
+  const [urlTestingModalProjectId, setUrlTestingModalProjectId] = useState<number | null>(null);
   const [newProject, setNewProject] = useState({
     name: '',
     description: '',
@@ -107,13 +109,20 @@ export default function ProjectsPage() {
                 <p className="text-sm font-medium mb-4">
                   Status: <span className="capitalize">{project.status}</span>
                 </p>
-                <div className="flex gap-2">
+                <div className="flex flex-wrap gap-2">
                   <Button 
                     className="flex-1 bg-blue-500 text-white border border-blue-500"
                     onClick={() => setTestingModalProjectId(project.id)}
                   >
                     <TestTube className="w-4 h-4 mr-2" />
                     Quick Test
+                  </Button>
+                  <Button
+                    className="flex-1 bg-blue-500 text-white border border-blue-500"
+                    onClick={() => setUrlTestingModalProjectId(project.id)}
+                  >
+                    <Globe className="w-4 h-4 mr-2" />
+                    URL Test
                   </Button>
                   <Button variant="outline" className="flex-1" onClick={() => router.push(`/dashboard/projects/${project.id}/sessions`)}>
                     View Details
@@ -183,6 +192,13 @@ export default function ProjectsPage() {
         projectId={testingModalProjectId || 0}
         open={testingModalProjectId !== null}
         onClose={() => setTestingModalProjectId(null)}
+      />
+
+      {/* URL Testing Modal */}
+      <UrlTestingModal
+        projectId={urlTestingModalProjectId || 0}
+        open={urlTestingModalProjectId !== null}
+        onClose={() => setUrlTestingModalProjectId(null)}
       />
     </div>
     </div>
