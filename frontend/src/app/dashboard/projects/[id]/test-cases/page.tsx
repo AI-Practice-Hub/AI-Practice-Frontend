@@ -29,7 +29,7 @@ export default function TestCasesPage() {
   const params = useParams();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const projectId = parseInt(params.id as string);
+  const projectId = params.id
   const chatId = searchParams.get('chatId');
 
   const [testCases, setTestCases] = useState<TestCase[]>([]);
