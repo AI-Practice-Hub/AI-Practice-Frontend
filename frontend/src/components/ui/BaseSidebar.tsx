@@ -13,7 +13,8 @@ interface BaseSidebarProps {
   navItems: NavItem[];
   open: boolean;
   onToggle: () => void;
-  title?: string;
+  // Title can be a string or a React node (logo image)
+  title?: React.ReactNode;
 }
 
 export const BaseSidebar = React.memo(function BaseSidebar({ navItems, open, onToggle, title = "Menu" }: BaseSidebarProps) {

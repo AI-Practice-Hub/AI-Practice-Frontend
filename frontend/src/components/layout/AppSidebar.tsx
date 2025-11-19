@@ -31,9 +31,19 @@ export function AppSidebar({ open, onToggle, variant }: AppSidebarProps) {
   const pathname = usePathname();
   const navItems = variant === 'main' ? mainNavItems : dashboardNavItems;
 
+  // To avoid marking parent paths (e.g., /dashboard) as active when a deeper route is active
+  // choose the nav item with the longest matching url prefix. This prevents /dashboard from
+  // staying active when /dashboard/projects is the active page.
+  const activeItem = navItems.reduce((best, item) => {
+    const matches = pathname === item.url || (item.url !== '/' && pathname.startsWith(item.url + '/')) || pathname.startsWith(item.url) && item.url === pathname;
+    if (!matches) return best;
+    if (!best || item.url.length > best.url.length) return item;
+    return best;
+  }, undefined as any);
+
   const itemsWithActive = navItems.map(item => ({
     ...item,
-    isActive: pathname === item.url || (item.url !== '/' && pathname.startsWith(item.url)),
+    isActive: activeItem ? activeItem.url === item.url : pathname === item.url || (item.url !== '/' && pathname.startsWith(item.url)),
   }));
 
   return (
@@ -41,7 +51,11 @@ export function AppSidebar({ open, onToggle, variant }: AppSidebarProps) {
       navItems={itemsWithActive}
       open={open}
       onToggle={onToggle}
-      title={variant === 'main' ? "AI Practice Hub" : "Dashboard"}
+      title={
+          <div className="flex items-center gap-2">
+            <img src="/company-logo.png" alt="TestSamurai" className="h-7 w-auto bg-white p-1 rounded-md shadow-sm" />
+          </div>
+      }
     />
   );
 }

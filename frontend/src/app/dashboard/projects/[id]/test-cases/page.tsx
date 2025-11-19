@@ -6,11 +6,14 @@ import { Button } from '@/components/ui/Button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
-import { ArrowLeft, Download, Play, CheckCircle, AlertCircle, ChevronDown, ChevronRight } from 'lucide-react';
+import { Textarea } from '@/components/ui/textarea';
+import { Download, Play, CheckCircle, AlertCircle, ChevronDown, ChevronRight } from 'lucide-react';
 import { api } from '@/lib/api';
+import { useToast } from '@/hooks/useToast';
 
 interface TestCase {
   test_case_id: string;
+  test_case_unique_id?: string;
   title: string;
   module_feature: string;
   priority: 'High' | 'Medium' | 'Low';
@@ -34,6 +37,8 @@ export default function TestCasesPage() {
   const [loading, setLoading] = useState(true);
   const [executing, setExecuting] = useState(false);
   const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
+  const [commentInputs, setCommentInputs] = useState<Record<string, string>>({});
+  const toast = useToast();
 
   useEffect(() => {
     if (chatId) {
@@ -53,9 +58,7 @@ export default function TestCasesPage() {
     }
   };
 
-  const handleBackToTesting = () => {
-    router.push(`/dashboard/projects/${projectId}/testing?chatId=${chatId}`);
-  };
+  // Removed handleBackToTesting - navigation to testing removed per design
 
   const handleBackToProjects = () => {
     router.push('/dashboard/projects');
@@ -74,6 +77,12 @@ export default function TestCasesPage() {
   };
 
   const toggleTestCaseSelection = (testCaseId: string) => {
+    const test = testCases.find(tc => tc.test_case_id === testCaseId);
+    if (!test) return;
+    if (test.status.toLowerCase() !== 'pending') {
+      toast.info('Only pending tests can be selected');
+      return;
+    }
     const newSelected = new Set(selectedCases);
     if (newSelected.has(testCaseId)) {
       newSelected.delete(testCaseId);
@@ -91,41 +100,34 @@ export default function TestCasesPage() {
       // Get selected test cases
       const selectedTestCases = testCases.filter(tc => selectedCases.has(tc.test_case_id));
 
-      // Create FormData for the API call
-      const formData = new FormData();
-      formData.append('invoke_type', 'resume');
-      formData.append('content', JSON.stringify(selectedTestCases));
+      // Build array of test_case_unique_id (fallback to test_case_id if not present)
+      const test_case_ids = selectedTestCases.map(tc => tc.test_case_unique_id || tc.test_case_id);
 
-      // Send message via chat API
-      const response = await api.post(`/chat/${chatId}/send-message?invoke_type=resume`, formData, {
-        headers: {
-          'Content-Type': undefined, // Let browser set proper multipart boundary
-        },
+      // Call automation execute endpoint
+      const response = await api.post(`/automation/execute-from-mongo`, {
+        project_id: projectId,
+        chat_id: chatId,
+        test_case_ids
       });
 
-      const newMessage = response.data;
+      const test_results = response.data.test_results || [];
 
-      // Update test case statuses based on the response
-      // For now, we'll simulate status updates, but in a real implementation
-      // you might want to parse the response and update accordingly
+      // Update local state by matching test_case_unique_id
       setTestCases(prev => prev.map(tc => {
-        if (selectedCases.has(tc.test_case_id)) {
-          return {
-            ...tc,
-            status: Math.random() > 0.3 ? 'Pass' : 'Fail' as const,
-            actual_result: `Test executed via API on ${new Date().toLocaleDateString()}`
-          };
-        }
-        return tc;
+        const uniqueId = tc.test_case_unique_id || tc.test_case_id;
+        const updated = test_results.find((r: any) => r.test_case_unique_id === uniqueId);
+        return updated ? { ...tc, ...updated } : tc;
       }));
-
+      
       setSelectedCases(new Set());
 
-      // Optionally show success message or handle response
-      console.log('Test execution response:', newMessage);
+      // Show success toast
+      toast.success(response.data.message || 'Execution completed');
 
     } catch (error) {
       console.error('Failed to execute tests:', error);
+      toast.error('Execution failed: ' + (error instanceof Error ? error.message : 'Unknown error'));
+      
       // Update test cases with error status
       setTestCases(prev => prev.map(tc => {
         if (selectedCases.has(tc.test_case_id)) {
@@ -141,6 +143,29 @@ export default function TestCasesPage() {
       setExecuting(false);
     }
   };
+
+  const handleAddComment = async (testCaseId: string) => {
+    if (!chatId) return;
+    const content = commentInputs[testCaseId]?.trim();
+    if (!content) {
+      toast.info('Comment cannot be empty');
+      return;
+    }
+
+    try {
+      // Update the test case with the user's comment (not storing the comment)
+      const res = await api.post(`/chat/${chatId}/test-cases/${testCaseId}/update`, { content });
+      const updated = res.data;
+      setTestCases(prev => prev.map(tc => tc.test_case_id === updated.test_case_id ? updated : tc));
+      setCommentInputs(prev => ({ ...prev, [testCaseId]: '' }));
+      toast.success('Comment added');
+    } catch (err: any) {
+      console.error('Failed to add comment', err);
+      toast.error('Failed to add comment');
+    }
+  };
+
+  // Per-row execute and delete removed per UI change: executions are performed via bulk selection; update performed via Send button.
 
   const handleExport = () => {
     // Simple export as JSON for now
@@ -187,7 +212,7 @@ export default function TestCasesPage() {
 
   const handleSelectAll = (checked: boolean) => {
     if (checked) {
-      setSelectedCases(new Set(testCases.map(tc => tc.test_case_id)));
+      setSelectedCases(new Set(testCases.filter(tc => tc.status.toLowerCase() === 'pending').map(tc => tc.test_case_id)));
     } else {
       setSelectedCases(new Set());
     }
@@ -210,10 +235,7 @@ export default function TestCasesPage() {
       <div className="bg-card border-b border-border px-6 py-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <Button variant="ghost" size="sm" onClick={handleBackToTesting}>
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Back to Testing
-            </Button>
+            {/* Back to Testing removed from UI */}
             <div>
               <h1 className="text-2xl font-bold text-foreground">Test Cases</h1>
               <p className="text-muted-foreground">Review and execute generated test cases</p>
@@ -243,11 +265,8 @@ export default function TestCasesPage() {
               <AlertCircle className="w-12 h-12 text-muted-foreground mb-4" />
               <h3 className="text-lg font-semibold mb-2">No Test Cases Found</h3>
               <p className="text-muted-foreground text-center mb-4">
-                Test cases could not be loaded. Please go back to testing and try again.
+                Test cases could not be loaded. Please go back to the Projects page or start a new testing session.
               </p>
-              <Button onClick={handleBackToTesting}>
-                Back to Testing
-              </Button>
             </CardContent>
           </Card>
         ) : (
@@ -293,8 +312,8 @@ export default function TestCasesPage() {
                   <tr>
                     <th className="w-12 p-3 text-left">
                       <Checkbox
-                        checked={selectedCases.size === testCases.length && testCases.length > 0}
-                        onCheckedChange={handleSelectAll}
+                          checked={selectedCases.size === testCases.filter(t=>t.status.toLowerCase()==='pending').length && testCases.filter(t=>t.status.toLowerCase()==='pending').length > 0}
+                          onCheckedChange={handleSelectAll}
                       />
                     </th>
                     <th className="w-8 p-3"></th>
@@ -317,6 +336,7 @@ export default function TestCasesPage() {
                             <Checkbox
                               checked={isSelected}
                               onCheckedChange={() => toggleTestCaseSelection(testCase.test_case_id)}
+                              disabled={testCase.status.toLowerCase() !== 'pending'}
                             />
                           </td>
                           <td className="p-3">
@@ -388,6 +408,27 @@ export default function TestCasesPage() {
                                     <p className="mt-1">{testCase.actual_result}</p>
                                   </div>
                                 )}
+                                  {/* Comments and controls */}
+                                  {testCase.status.toLowerCase() === 'pending' && (
+                                    <div className="col-span-1 md:col-span-2">
+                                      {/* Send updates directly to testcase - no comment history */}
+                                      {/* Comments not stored; we only send the user input to update the testcase */}
+
+                                      <div className="flex items-start gap-2 mt-2">
+                                        <Textarea
+                                          value={commentInputs[testCase.test_case_id] || ''}
+                                          onChange={(e) => setCommentInputs(prev => ({ ...prev, [testCase.test_case_id]: e.target.value }))}
+                                          placeholder="Add a comment or request update for this test case"
+                                          rows={2}
+                                        />
+                                        <div className="flex flex-col gap-2">
+                                          <Button onClick={() => handleAddComment(testCase.test_case_id)}>
+                                            Send
+                                          </Button>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  )}
                               </div>
                             </td>
                           </tr>

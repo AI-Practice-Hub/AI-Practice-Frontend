@@ -14,8 +14,14 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "AI Practice Hub",
+  title: "TestSamurAi",
   description: "AI-powered testing automation platform",
+  icons: {
+    icon: [
+      { url: '/company-logo.png', type: 'image/png' },
+    ],
+    apple: [{ url: '/company-logo.png' }],
+  },
 };
 
 export default function RootLayout({

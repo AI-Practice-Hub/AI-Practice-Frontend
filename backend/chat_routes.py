@@ -20,6 +20,7 @@ router = APIRouter()
 TEST_CASES = [
         {
             "test_case_id": "TC-SEARCH-001",
+            "test_case_unique_id": "tc-unique-001",
             "title": "Verify Search Bar Visibility and Accessibility on Homepage",
             "module_feature": "Search Bar - Visibility",
             "priority": "High",
@@ -35,6 +36,7 @@ TEST_CASES = [
         },
         {
             "test_case_id": "TC-SEARCH-002",
+            "test_case_unique_id": "tc-unique-002",
             "title": "Validate Auto-Suggestion Functionality (Positive Keyword & Performance NFR)",
             "module_feature": "Search Bar - Auto-Suggestions & Performance",
             "priority": "High",
@@ -52,6 +54,7 @@ TEST_CASES = [
         },
         {
             "test_case_id": "TC-SEARCH-003",
+            "test_case_unique_id": "tc-unique-003",
             "title": "Verify Search Functionality using Complex Keyword and Enter Key Submission",
             "module_feature": "Search Functionality",
             "priority": "High",
@@ -68,6 +71,7 @@ TEST_CASES = [
         },
         {
             "test_case_id": "TC-SRP-004",
+            "test_case_unique_id": "tc-unique-004",
             "title": "Validate Core Visual Components of the Search Results Page (SRP)",
             "module_feature": "SRP - Visual Structure",
             "priority": "High",
@@ -85,6 +89,7 @@ TEST_CASES = [
         },
         {
             "test_case_id": "TC-SRP-005",
+            "test_case_unique_id": "tc-unique-005",
             "title": "Validate Product Card Structure on the SRP",
             "module_feature": "SRP - Product Grid Details",
             "priority": "High",
@@ -100,6 +105,7 @@ TEST_CASES = [
         },
         {
             "test_case_id": "TC-SRP-006",
+            "test_case_unique_id": "tc-unique-006",
             "title": "Verify Anonymous User Navigation from SRP to Product Detail Page (PDP)",
             "module_feature": "SRP - Navigation",
             "priority": "High",
@@ -117,6 +123,7 @@ TEST_CASES = [
         },
         {
             "test_case_id": "TC-SEARCH-007",
+            "test_case_unique_id": "tc-unique-007",
             "title": "Validate SRP Relevance: Keyword Match (Brand and Title)",
             "module_feature": "SRP - Relevance",
             "priority": "Medium",
@@ -132,6 +139,7 @@ TEST_CASES = [
         },
         {
             "test_case_id": "TC-SEARCH-008",
+            "test_case_unique_id": "tc-unique-008",
             "title": "Validate Edge Case: Search using Special Characters/Invalid Input (Sanitization)",
             "module_feature": "Search Functionality - Input Validation/Sanitization",
             "priority": "Medium",
@@ -144,10 +152,11 @@ TEST_CASES = [
             "test_data": "Search Query: 'shoes <script>alert('XSS')</script>'",
             "expected_result": "1. The system must sanitize the input, preventing the execution of code (no alert box should appear).\n2. The SRP should either treat the input as literal text and show zero/irrelevant results, or successfully remove the characters and search for 'shoes'. The page should load securely and not crash.",
             "actual_result": "",
-            "status": "Pending"
+            "status": "Pass"
         },
         {
             "test_case_id": "TC-SRP-009",
+            "test_case_unique_id": "tc-unique-009",
             "title": "Validate Performance NFR: SRP Load Time",
             "module_feature": "SRP - Performance NFR",
             "priority": "High",
@@ -160,7 +169,7 @@ TEST_CASES = [
             "test_data": "Search Query: 'tshirts'",
             "expected_result": "The Search Results Page (SRP) must load and display results within the specified 2 seconds performance constraint.",
             "actual_result": "",
-            "status": "Pending"
+            "status": "Fail"
         }
     ]
 #  [
@@ -507,3 +516,155 @@ def get_test_cases(chat_id: int, db: Session = Depends(get_db), user_id: int = D
     # For now, return dummy test cases
     # TODO: Later, analyze chat history to generate relevant test cases
     return TEST_CASES
+
+
+@router.get('/chat/{chat_id}/test-cases/{test_case_id}', response_model=dict)
+def get_test_case(chat_id: int, test_case_id: str, db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
+    # Verify user owns the chat (via project)
+    chat = db.query(Chat).join(Chat.project).filter(Chat.id == chat_id, Project.user_id == user_id).first()
+    if not chat:
+        raise HTTPException(status_code=404, detail='Chat not found or unauthorized')
+
+    for tc in TEST_CASES:
+        if tc.get('test_case_id') == test_case_id:
+            return tc
+
+    raise HTTPException(status_code=404, detail='Test case not found')
+
+
+@router.post('/chat/{chat_id}/test-cases/{test_case_id}/comment', response_model=dict)
+def comment_test_case(chat_id: int, test_case_id: str, payload: dict, db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
+    # Verify ownership
+    chat = db.query(Chat).join(Chat.project).filter(Chat.id == chat_id, Project.user_id == user_id).first()
+    if not chat:
+        raise HTTPException(status_code=404, detail='Chat not found or unauthorized')
+
+    # Deprecated endpoint: comments will not be stored.
+    raise HTTPException(status_code=410, detail='This endpoint is deprecated. Use /update instead.')
+
+
+@router.post('/chat/{chat_id}/test-cases/{test_case_id}/update', response_model=dict)
+def update_test_case(chat_id: int, test_case_id: str, payload: dict, db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
+    """
+    Update the test case details based on user-provided text. This is a mock endpoint — it updates the expected_result.
+    """
+    chat = db.query(Chat).join(Chat.project).filter(Chat.id == chat_id, Project.user_id == user_id).first()
+    if not chat:
+        raise HTTPException(status_code=404, detail='Chat not found or unauthorized')
+
+    content = payload.get('content')
+    if not content:
+        raise HTTPException(status_code=400, detail='Content is required')
+
+    for tc in TEST_CASES:
+        if tc.get('test_case_id') == test_case_id:
+            if tc.get('status', '').lower() != 'pending':
+                raise HTTPException(status_code=400, detail='Cannot update a non-pending test case')
+
+            # Mock update: replace expected_result with content
+            tc['expected_result'] = content
+            return tc
+
+    raise HTTPException(status_code=404, detail='Test case not found')
+
+
+@router.post('/chat/{chat_id}/test-cases/{test_case_id}/execute', response_model=dict)
+def execute_test_case(chat_id: int, test_case_id: str, db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
+    # Verify ownership
+    chat = db.query(Chat).join(Chat.project).filter(Chat.id == chat_id, Project.user_id == user_id).first()
+    if not chat:
+        raise HTTPException(status_code=404, detail='Chat not found or unauthorized')
+
+    for tc in TEST_CASES:
+        if tc.get('test_case_id') == test_case_id:
+            if tc.get('status', '').lower() != 'pending':
+                raise HTTPException(status_code=400, detail='Test case already executed')
+
+            # Mock execution result
+            # Randomly choose pass or fail
+            import random
+            tc['status'] = 'Pass' if random.random() > 0.3 else 'Fail'
+            tc['actual_result'] = f"Executed by mock runner on {datetime.utcnow().isoformat()}"
+            return tc
+
+    raise HTTPException(status_code=404, detail='Test case not found')
+
+
+@router.post('/chat/{chat_id}/test-cases/execute', response_model=dict)
+def bulk_execute_test_cases(chat_id: int, payload: dict, db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
+    # Expected payload: { test_case_ids: ["TC-...", ...] }
+    chat = db.query(Chat).join(Chat.project).filter(Chat.id == chat_id, Project.user_id == user_id).first()
+    if not chat:
+        raise HTTPException(status_code=404, detail='Chat not found or unauthorized')
+
+    test_case_ids = payload.get('test_case_ids') or []
+    if not isinstance(test_case_ids, list) or len(test_case_ids) == 0:
+        raise HTTPException(status_code=400, detail='test_case_ids is required')
+
+    executed = []
+    for tc_id in test_case_ids:
+        for tc in TEST_CASES:
+            if tc.get('test_case_id') == tc_id:
+                if tc.get('status', '').lower() != 'pending':
+                    continue
+                import random
+                tc['status'] = 'Pass' if random.random() > 0.3 else 'Fail'
+                tc['actual_result'] = f"Executed by mock runner on {datetime.utcnow().isoformat()}"
+                executed.append(tc)
+    return { 'executed': executed }
+
+
+@router.delete('/chat/{chat_id}/test-cases/{test_case_id}')
+def delete_test_case(chat_id: int, test_case_id: str, db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
+    chat = db.query(Chat).join(Chat.project).filter(Chat.id == chat_id, Project.user_id == user_id).first()
+    if not chat:
+        raise HTTPException(status_code=404, detail='Chat not found or unauthorized')
+
+    for i, tc in enumerate(TEST_CASES):
+        if tc.get('test_case_id') == test_case_id:
+            TEST_CASES.pop(i)
+            return { 'message': 'Test case deleted' }
+
+    raise HTTPException(status_code=404, detail='Test case not found')
+
+
+@router.post('/automation/execute-from-mongo', response_model=dict)
+def execute_from_mongo(payload: dict, db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
+    """
+    Mock automation endpoint that finds test cases by test_case_unique_id,
+    executes them (mock), and returns updated results.
+    """
+    project_id = payload.get('project_id')
+    chat_id = payload.get('chat_id')
+    test_case_ids = payload.get('test_case_ids')  # array of test_case_unique_id
+
+    if not project_id or not chat_id or not isinstance(test_case_ids, list) or len(test_case_ids) == 0:
+        raise HTTPException(status_code=400, detail='project_id, chat_id and test_case_ids are required')
+
+    # Verify project ownership
+    project = db.query(Project).filter(Project.id == project_id, Project.user_id == user_id).first()
+    if not project:
+        raise HTTPException(status_code=404, detail='Project not found or unauthorized')
+
+    # Verify chat ownership
+    chat = db.query(Chat).join(Chat.project).filter(Chat.id == chat_id, Project.user_id == user_id).first()
+    if not chat:
+        raise HTTPException(status_code=404, detail='Chat not found or unauthorized')
+
+    # Find and execute test cases by test_case_unique_id
+    test_results = []
+    for unique_id in test_case_ids:
+        for tc in TEST_CASES:
+            if tc.get('test_case_unique_id') == unique_id:
+                if tc.get('status', '').lower() == 'pending':
+                    # Mock execution
+                    import random
+                    tc['status'] = 'Pass' if random.random() > 0.3 else 'Fail'
+                    tc['actual_result'] = f"Mock execution completed on {datetime.utcnow().isoformat()}"
+                test_results.append(tc)
+                break
+
+    return {
+        'message': f'Executed {len(test_results)} test case(s) successfully',
+        'test_results': test_results
+    }
