@@ -58,7 +58,7 @@ export function UrlTestingModal({ projectId, open, onClose }: UrlTestingModalPro
       const newChat = chatResponse.data;
 
       // Call explore endpoint
-      await api.post('/testcase/page/explore', {
+      await api.post('/discovery/explore', {
         url: url.trim(),
         max_pages: maxPages,
         project_id: projectId,

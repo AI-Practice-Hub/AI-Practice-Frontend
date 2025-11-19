@@ -18,7 +18,7 @@ class PageExploreRequest(BaseModel):
     suggestion: Optional[str] = None
 
 
-@router.post('/testcase/page/explore')
+@router.post('/discovery/explore')
 def explore_page(payload: PageExploreRequest, db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
     # Verify project ownership
     project = db.query(Project).filter(Project.id == payload.project_id, Project.user_id == user_id).first()
