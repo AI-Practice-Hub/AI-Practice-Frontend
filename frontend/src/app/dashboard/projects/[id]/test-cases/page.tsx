@@ -79,10 +79,6 @@ export default function TestCasesPage() {
   const toggleTestCaseSelection = (testCaseId: string) => {
     const test = testCases.find(tc => tc.test_case_id === testCaseId);
     if (!test) return;
-    if (test.status.toLowerCase() !== 'pending') {
-      toast.info('Only pending tests can be selected');
-      return;
-    }
     const newSelected = new Set(selectedCases);
     if (newSelected.has(testCaseId)) {
       newSelected.delete(testCaseId);
@@ -212,7 +208,7 @@ export default function TestCasesPage() {
 
   const handleSelectAll = (checked: boolean) => {
     if (checked) {
-      setSelectedCases(new Set(testCases.filter(tc => tc.status.toLowerCase() === 'pending').map(tc => tc.test_case_id)));
+      setSelectedCases(new Set(testCases.map(tc => tc.test_case_id)));
     } else {
       setSelectedCases(new Set());
     }
@@ -312,7 +308,7 @@ export default function TestCasesPage() {
                   <tr>
                     <th className="w-12 p-3 text-left">
                       <Checkbox
-                          checked={selectedCases.size === testCases.filter(t=>t.status.toLowerCase()==='pending').length && testCases.filter(t=>t.status.toLowerCase()==='pending').length > 0}
+                          checked={selectedCases.size === testCases.length && testCases.length > 0}
                           onCheckedChange={handleSelectAll}
                       />
                     </th>
@@ -336,7 +332,6 @@ export default function TestCasesPage() {
                             <Checkbox
                               checked={isSelected}
                               onCheckedChange={() => toggleTestCaseSelection(testCase.test_case_id)}
-                              disabled={testCase.status.toLowerCase() !== 'pending'}
                             />
                           </td>
                           <td className="p-3">
@@ -409,26 +404,24 @@ export default function TestCasesPage() {
                                   </div>
                                 )}
                                   {/* Comments and controls */}
-                                  {testCase.status.toLowerCase() === 'pending' && (
-                                    <div className="col-span-1 md:col-span-2">
-                                      {/* Send updates directly to testcase - no comment history */}
-                                      {/* Comments not stored; we only send the user input to update the testcase */}
+                                  <div className="col-span-1 md:col-span-2">
+                                    {/* Send updates directly to testcase - no comment history */}
+                                    {/* Comments not stored; we only send the user input to update the testcase */}
 
-                                      <div className="flex items-start gap-2 mt-2">
-                                        <Textarea
-                                          value={commentInputs[testCase.test_case_id] || ''}
-                                          onChange={(e) => setCommentInputs(prev => ({ ...prev, [testCase.test_case_id]: e.target.value }))}
-                                          placeholder="Add a comment or request update for this test case"
-                                          rows={2}
-                                        />
-                                        <div className="flex flex-col gap-2">
-                                          <Button onClick={() => handleAddComment(testCase.test_case_id)}>
-                                            Send
-                                          </Button>
-                                        </div>
+                                    <div className="flex items-start gap-2 mt-2">
+                                      <Textarea
+                                        value={commentInputs[testCase.test_case_id] || ''}
+                                        onChange={(e) => setCommentInputs(prev => ({ ...prev, [testCase.test_case_id]: e.target.value }))}
+                                        placeholder="Add a comment or request update for this test case"
+                                        rows={2}
+                                      />
+                                      <div className="flex flex-col gap-2">
+                                        <Button onClick={() => handleAddComment(testCase.test_case_id)}>
+                                          Send
+                                        </Button>
                                       </div>
                                     </div>
-                                  )}
+                                  </div>
                               </div>
                             </td>
                           </tr>

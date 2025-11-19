@@ -22,6 +22,7 @@ export function UrlTestingModal({ projectId, open, onClose }: UrlTestingModalPro
   const [maxPages, setMaxPages] = useState(1);
   const [suggestions, setSuggestions] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const validateUrl = (u: string) => {
     try {
@@ -35,8 +36,16 @@ export function UrlTestingModal({ projectId, open, onClose }: UrlTestingModalPro
   };
 
   const handleStartExplore = async () => {
-    if (!sessionName.trim() || !url.trim()) return;
-    if (!validateUrl(url.trim())) return;
+    setError(null);
+    if (!sessionName.trim() || !url.trim()) {
+      setError("Session name and URL are required");
+      return;
+    }
+    
+    if (!validateUrl(url.trim())) {
+      setError("Invalid URL. Please include http:// or https://");
+      return;
+    }
 
     setIsSubmitting(true);
     try {
@@ -49,7 +58,7 @@ export function UrlTestingModal({ projectId, open, onClose }: UrlTestingModalPro
       const newChat = chatResponse.data;
 
       // Call explore endpoint
-      await api.post('/page/explore', {
+      await api.post('/testcase/page/explore', {
         url: url.trim(),
         max_pages: maxPages,
         project_id: projectId,
@@ -62,6 +71,7 @@ export function UrlTestingModal({ projectId, open, onClose }: UrlTestingModalPro
       router.push(`/dashboard/projects/${projectId}/testing?chatId=${newChat.id}`);
     } catch (error) {
       console.error('Failed to start URL exploration', error);
+      setError("Failed to start exploration. Please check the console for details.");
     } finally {
       setIsSubmitting(false);
     }
@@ -72,6 +82,7 @@ export function UrlTestingModal({ projectId, open, onClose }: UrlTestingModalPro
     setUrl('');
     setMaxPages(1);
     setSuggestions('');
+    setError(null);
     onClose();
   };
 
@@ -83,6 +94,11 @@ export function UrlTestingModal({ projectId, open, onClose }: UrlTestingModalPro
         </DialogHeader>
 
         <div className="space-y-4">
+          {error && (
+            <div className="text-sm text-red-500 bg-red-50 p-2 rounded">
+              {error}
+            </div>
+          )}
           <div>
             <Label htmlFor="url-session-name">Session Name</Label>
             <Input
