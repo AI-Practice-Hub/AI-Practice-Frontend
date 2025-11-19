@@ -61,8 +61,8 @@ export function UrlTestingModal({ projectId, open, onClose }: UrlTestingModalPro
       await api.post('/discovery/explore', {
         url: url.trim(),
         max_pages: maxPages,
-        project_id: projectId,
-        chat_id: newChat.id,
+        project_id: projectId.toString(),
+        chat_id: newChat.id.toString(),
         suggestion: suggestions || undefined,
       });
 

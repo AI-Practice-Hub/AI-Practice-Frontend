@@ -13,31 +13,31 @@ router = APIRouter()
 class PageExploreRequest(BaseModel):
     url: str
     max_pages: int
-    project_id: int
-    chat_id: int
+    project_id: str
+    chat_id: str
     suggestion: Optional[str] = None
 
 
 @router.post('/discovery/explore')
 def explore_page(payload: PageExploreRequest, db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
     # Verify project ownership
-    project = db.query(Project).filter(Project.id == payload.project_id, Project.user_id == user_id).first()
+    project = db.query(Project).filter(Project.id == int(payload.project_id), Project.user_id == user_id).first()
     if not project:
         raise HTTPException(status_code=404, detail="Project not found or unauthorized")
 
     # Verify chat belongs to project
-    chat = db.query(Chat).filter(Chat.id == payload.chat_id, Chat.project_id == payload.project_id).first()
+    chat = db.query(Chat).filter(Chat.id == int(payload.chat_id), Chat.project_id == int(payload.project_id)).first()
     if not chat:
         raise HTTPException(status_code=404, detail="Chat not found or mismatched with project")
 
     # Create a user message that contains exploration parameters
-    user_msg = Message(chat_id=payload.chat_id, sender="user", content=f"Explore URL: {payload.url} (max_pages={payload.max_pages}) Suggestion: {payload.suggestion or ''}", timestamp=datetime.utcnow())
+    user_msg = Message(chat_id=int(payload.chat_id), sender="user", content=f"Explore URL: {payload.url} (max_pages={payload.max_pages}) Suggestion: {payload.suggestion or ''}", timestamp=datetime.utcnow())
     db.add(user_msg)
     db.commit()
     db.refresh(user_msg)
 
     # Create a bot message with a hint that test cases are available - frontend will detect this content
-    bot_msg = Message(chat_id=payload.chat_id, sender="bot", content="Test cases available for selection", timestamp=datetime.utcnow())
+    bot_msg = Message(chat_id=int(payload.chat_id), sender="bot", content="Test cases available for selection", timestamp=datetime.utcnow())
     db.add(bot_msg)
     db.commit()
     db.refresh(bot_msg)
