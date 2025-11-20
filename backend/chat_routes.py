@@ -9,6 +9,7 @@ from fastapi import Query
 from auth import get_current_user_id, get_db
 import random
 import os
+from pydantic import BaseModel
 
 # LangChain Gemini integration
 from langchain_google_genai import ChatGoogleGenerativeAI
@@ -543,27 +544,58 @@ def comment_test_case(chat_id: int, test_case_id: str, payload: dict, db: Sessio
     raise HTTPException(status_code=410, detail='This endpoint is deprecated. Use /update instead.')
 
 
-@router.post('/chat/{chat_id}/test-cases/{test_case_id}/update', response_model=dict)
-def update_test_case(chat_id: int, test_case_id: str, payload: dict, db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
+class UpdateTestCaseRequest(BaseModel):
+    chat_id: str
+    project_id: str
+    test_case_id: str
+    test_case_unique_id: str
+    comments: str
+
+
+@router.post('/chat/update_test_case', response_model=dict)
+def update_test_case(payload: UpdateTestCaseRequest, db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
     """
     Update the test case details based on user-provided text. This is a mock endpoint — it updates the expected_result.
     """
-    chat = db.query(Chat).join(Chat.project).filter(Chat.id == chat_id, Project.user_id == user_id).first()
+    chat_id = int(payload.chat_id)
+    project_id = int(payload.project_id)
+    
+    # Verify ownership
+    chat = db.query(Chat).join(Chat.project).filter(Chat.id == chat_id, Project.id == project_id, Project.user_id == user_id).first()
     if not chat:
         raise HTTPException(status_code=404, detail='Chat not found or unauthorized')
 
-    content = payload.get('content')
+    content = payload.comments
     if not content:
-        raise HTTPException(status_code=400, detail='Content is required')
+        raise HTTPException(status_code=400, detail='Comments are required')
 
+    # Find by unique ID first, then fallback to ID
+    target_tc = None
     for tc in TEST_CASES:
-        if tc.get('test_case_id') == test_case_id:
-            if tc.get('status', '').lower() != 'pending':
-                raise HTTPException(status_code=400, detail='Cannot update a non-pending test case')
-
-            # Mock update: replace expected_result with content
-            tc['expected_result'] = content
-            return tc
+        if tc.get('test_case_unique_id') == payload.test_case_unique_id:
+            target_tc = tc
+            break
+        # Fallback check if unique_id matches test_case_id (for legacy data)
+        if tc.get('test_case_id') == payload.test_case_id:
+            target_tc = tc
+            break
+            
+    if target_tc:
+        # Mock update: replace expected_result with comments
+        target_tc['expected_result'] = content
+        
+        # Inject missing fields for the mock response to match real API structure
+        response_tc = target_tc.copy()
+        response_tc['project_id'] = str(project_id)
+        response_tc['chat_id'] = str(chat_id)
+        response_tc['created_at'] = datetime.utcnow().isoformat()
+        response_tc['updated_at'] = datetime.utcnow().isoformat()
+        response_tc['error_log'] = None
+        
+        # Update the main TEST_CASES list so it persists in memory
+        target_tc.update(response_tc)
+        
+        return response_tc
 
     raise HTTPException(status_code=404, detail='Test case not found')
 

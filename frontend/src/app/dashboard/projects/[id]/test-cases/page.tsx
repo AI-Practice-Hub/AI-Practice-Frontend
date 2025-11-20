@@ -23,6 +23,11 @@ interface TestCase {
   expected_result: string;
   actual_result?: string;
   status: 'Pass' | 'Fail' | 'Pending';
+  project_id?: string;
+  chat_id?: string;
+  created_at?: string;
+  updated_at?: string;
+  error_log?: string | null;
 }
 
 export default function TestCasesPage() {
@@ -148,9 +153,20 @@ export default function TestCasesPage() {
       return;
     }
 
+    const testCase = testCases.find(tc => tc.test_case_id === testCaseId);
+    if (!testCase) return;
+
     try {
-      // Update the test case with the user's comment (not storing the comment)
-      const res = await api.post(`/chat/${chatId}/test-cases/${testCaseId}/update`, { content });
+      // Update the test case with the user's comment
+      const payload = {
+        chat_id: chatId.toString(),
+        project_id: (projectId || '').toString(),
+        test_case_id: testCaseId,
+        test_case_unique_id: testCase.test_case_unique_id || testCaseId,
+        comments: content
+      };
+
+      const res = await api.post('/chat/update_test_case', payload);
       const updated = res.data;
       setTestCases(prev => prev.map(tc => tc.test_case_id === updated.test_case_id ? updated : tc));
       setCommentInputs(prev => ({ ...prev, [testCaseId]: '' }));
