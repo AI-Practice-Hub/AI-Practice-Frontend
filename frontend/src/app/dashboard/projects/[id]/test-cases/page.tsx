@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Textarea } from '@/components/ui/textarea';
-import { Download, Play, CheckCircle, AlertCircle, ChevronDown, ChevronRight } from 'lucide-react';
+import { Download, Play, CheckCircle, AlertCircle, ChevronDown, ChevronRight, Send } from 'lucide-react';
 import { api } from '@/lib/api';
 import { useToast } from '@/hooks/useToast';
 
@@ -41,6 +41,7 @@ export default function TestCasesPage() {
   const [selectedCases, setSelectedCases] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
   const [executing, setExecuting] = useState(false);
+  const [sendingToJira, setSendingToJira] = useState(false);
   const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
   const [commentInputs, setCommentInputs] = useState<Record<string, string>>({});
   const toast = useToast();
@@ -142,6 +143,54 @@ export default function TestCasesPage() {
       }));
     } finally {
       setExecuting(false);
+    }
+  };
+
+  const handleSendToJira = async () => {
+    if (selectedCases.size === 0) {
+      toast.info('Please select at least one test case to send to Jira');
+      return;
+    }
+
+    setSendingToJira(true);
+    let successCount = 0;
+    let failCount = 0;
+
+    try {
+      const selectedTestCases = testCases.filter(tc => selectedCases.has(tc.test_case_id));
+
+      for (const testCase of selectedTestCases) {
+        try {
+          const response = await api.post('/chat/jira_integration', {
+            test_case_unique_id: testCase.test_case_unique_id || testCase.test_case_id
+          });
+
+          if (response.data.success) {
+            successCount++;
+          } else {
+            failCount++;
+          }
+        } catch (error: any) {
+          failCount++;
+          console.error(`Failed to send test case ${testCase.test_case_id} to Jira:`, error);
+        }
+      }
+
+      if (successCount > 0 && failCount === 0) {
+        toast.success(`Successfully sent ${successCount} test case(s) to Jira`);
+      } else if (successCount > 0 && failCount > 0) {
+        toast.info(`Sent ${successCount} test case(s) to Jira, ${failCount} failed`);
+      } else {
+        toast.error('Failed to send test cases to Jira');
+      }
+
+      // Clear selection after sending
+      setSelectedCases(new Set());
+    } catch (error: any) {
+      console.error('Failed to send to Jira:', error);
+      toast.error(error.response?.data?.detail || 'Failed to send test cases to Jira');
+    } finally {
+      setSendingToJira(false);
     }
   };
 
@@ -257,6 +306,14 @@ export default function TestCasesPage() {
             <Button variant="outline" onClick={handleExport}>
               <Download className="w-4 h-4 mr-2" />
               Export
+            </Button>
+            <Button
+              variant="outline"
+              onClick={handleSendToJira}
+              disabled={selectedCases.size === 0 || sendingToJira}
+            >
+              <Send className="w-4 h-4 mr-2" />
+              {sendingToJira ? 'Sending...' : `Send to Jira (${selectedCases.size})`}
             </Button>
             <Button
               onClick={handleExecuteSelected}

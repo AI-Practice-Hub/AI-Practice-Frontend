@@ -21,6 +21,7 @@ def create_project(project: schemas.ProjectCreate, db: Session = Depends(get_db)
         name=project.name,
         description=project.description,
         status=project.status,
+        jira_project_id=project.jira_project_id,
         user_id=user_id
     )
     db.add(new_project)
@@ -49,6 +50,8 @@ def update_project(project_id: int, project_update: schemas.ProjectCreate, db: S
     project.name = project_update.name
     project.description = project_update.description
     project.status = project_update.status
+    if project_update.jira_project_id is not None:
+        project.jira_project_id = project_update.jira_project_id
     db.commit()
     db.refresh(project)
     return project

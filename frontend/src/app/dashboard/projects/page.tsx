@@ -25,6 +25,7 @@ export default function ProjectsPage() {
   const [newProject, setNewProject] = useState({
     name: '',
     description: '',
+    jira_project_id: '',
   });
   const [isCreating, setIsCreating] = useState(false);
 
@@ -49,10 +50,11 @@ export default function ProjectsPage() {
         name: newProject.name.trim(),
         description: newProject.description.trim() || undefined,
         status: 'active',
+        jira_project_id: newProject.jira_project_id.trim() || undefined,
       });
       
       setProjects(prev => [createdProject, ...prev]);
-      setNewProject({ name: '', description: '' });
+      setNewProject({ name: '', description: '', jira_project_id: '' });
       setIsCreateModalOpen(false);
     } catch (err) {
       console.error('Failed to create project:', err);
@@ -166,6 +168,19 @@ export default function ProjectsPage() {
                 rows={3}
                 disabled={isCreating}
               />
+            </div>
+            <div>
+              <Label htmlFor="jira-project-id">Jira Project ID</Label>
+              <Input
+                id="jira-project-id"
+                value={newProject.jira_project_id}
+                onChange={(e) => setNewProject(prev => ({ ...prev, jira_project_id: e.target.value }))}
+                placeholder="e.g., PROJ, TEST (optional)"
+                disabled={isCreating}
+              />
+              <p className="text-xs text-muted-foreground mt-1">
+                Enter the Jira project key to link this project with Jira
+              </p>
             </div>
           </div>
           <DialogFooter>

@@ -23,12 +23,19 @@ class UserOut(BaseModel):
     id: int
     email: str
     username: Optional[str] = None
+    jira_email: Optional[str] = None
+    jira_api_token: Optional[str] = None
     created_at: datetime
 
     model_config = {
         # This is the new way in Pydantic V2 to enable ORM mode
         "from_attributes": True
     }
+
+
+class UserUpdate(BaseModel):
+    jira_email: Optional[str] = None
+    jira_api_token: Optional[str] = None
 
 
 class UserLogin(BaseModel):
@@ -40,6 +47,7 @@ class ProjectBase(BaseModel):
     name: str
     description: Optional[str] = None
     status: str = "active"
+    jira_project_id: Optional[str] = None
 
 
 class ProjectCreate(ProjectBase):

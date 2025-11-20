@@ -10,6 +10,8 @@ class User(Base):
     email = Column(String, unique=True, index=True, nullable=False)
     username = Column(String, unique=True, index=True, nullable=True)
     hashed_password = Column(String, nullable=False)
+    jira_email = Column(String, nullable=True)
+    jira_api_token = Column(String, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
     chats = relationship("Chat", back_populates="user")
     projects = relationship("Project", back_populates="user")
@@ -20,6 +22,7 @@ class Project(Base):
     name = Column(String, nullable=False)
     description = Column(Text, nullable=True)
     status = Column(String, default="active")  # active, completed, etc.
+    jira_project_id = Column(String, nullable=True)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow)
     user = relationship("User", back_populates="projects")

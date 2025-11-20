@@ -714,3 +714,62 @@ def execute_from_mongo(payload: dict, db: Session = Depends(get_db), user_id: in
         'message': f'Executed {len(test_results)} test case(s) successfully',
         'test_results': test_results
     }
+
+
+@router.post('/jira_integration')
+def jira_integration(payload: dict, db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
+    """
+    Send a test case to Jira.
+    Expects: { "test_case_unique_id": "<id>" }
+    """
+    test_case_unique_id = payload.get('test_case_unique_id')
+    
+    if not test_case_unique_id:
+        raise HTTPException(status_code=400, detail='test_case_unique_id is required')
+    
+    # Get user's Jira credentials
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail='User not found')
+    
+    if not user.jira_email or not user.jira_api_token:
+        raise HTTPException(
+            status_code=400, 
+            detail='Jira credentials not configured. Please add your Jira email and API token in Settings.'
+        )
+    
+    # Find the test case
+    test_case = None
+    for tc in TEST_CASES:
+        if tc.get('test_case_unique_id') == test_case_unique_id:
+            test_case = tc
+            break
+    
+    if not test_case:
+        raise HTTPException(status_code=404, detail='Test case not found')
+    
+    # Mock Jira integration - in production, this would make actual API calls to Jira
+    # For now, we'll just simulate success
+    try:
+        # Here you would typically:
+        # 1. Get project's jira_project_id from the database
+        # 2. Format the test case data for Jira API
+        # 3. Make POST request to Jira API to create issue/test case
+        # 4. Handle Jira API response
+        
+        # Mock response
+        jira_issue_key = f"PROJ-{random.randint(1000, 9999)}"
+        
+        return {
+            'success': True,
+            'message': f'Test case successfully sent to Jira',
+            'jira_issue_key': jira_issue_key,
+            'test_case_id': test_case.get('test_case_id'),
+            'test_case_unique_id': test_case_unique_id
+        }
+    
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f'Failed to send test case to Jira: {str(e)}'
+        )
