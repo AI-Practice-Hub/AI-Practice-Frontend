@@ -88,9 +88,9 @@ export function AppSidebar({ open, onToggle, variant }: AppSidebarProps) {
           <DropdownMenuTrigger asChild>
             <Button 
               variant="ghost" 
-              className={`w-full flex items-center gap-2 px-2 hover:bg-sidebar-accent h-auto py-2 ${open ? 'justify-start' : 'justify-center'}`}
+              className={`${open ? 'w-full' : ''} flex items-center gap-2 px-2 hover:bg-sidebar-accent h-auto py-2 ${open ? 'justify-start' : 'justify-center'}`}
             >
-              <Avatar className="h-8 w-8 rounded-lg">
+              <Avatar className="h-8 w-8 rounded-lg flex-shrink-0">
                 <AvatarFallback className="rounded-lg bg-primary text-primary-foreground">
                   {initials}
                 </AvatarFallback>

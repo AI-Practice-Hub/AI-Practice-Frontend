@@ -21,16 +21,32 @@ export default function TestingPage() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [responses, setResponses] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [projectName, setProjectName] = useState<string>('');
+  const [chatTitle, setChatTitle] = useState<string>('');
   const inputPanelRef = useRef<InputPanelRef>(null);
 
-  // Load chat history on mount
+  // Load chat history and details on mount
   useEffect(() => {
-    if (chatId) {
-      loadChatHistory();
-    } else {
-      setLoading(false);
-    }
+    const loadData = async () => {
+      if (chatId) {
+        await loadChatDetails();
+        await loadChatHistory();
+      } else {
+        setLoading(false);
+      }
+    };
+    loadData();
   }, [chatId]);
+
+  const loadChatDetails = async () => {
+    try {
+      const response = await api.get(`/chat/${chatId}/details`);
+      setChatTitle(response.data.chat_title);
+      setProjectName(response.data.project_name);
+    } catch (error) {
+      console.error('Failed to load chat details:', error);
+    }
+  };
 
   const loadChatHistory = async () => {
     try {
@@ -236,6 +252,8 @@ export default function TestingPage() {
       {/* Header */}
       <TestingHeader
         projectId={projectId}
+        projectName={projectName}
+        chatTitle={chatTitle}
         onBack={handleBackToProjects}
       />
 

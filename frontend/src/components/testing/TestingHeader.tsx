@@ -7,10 +7,12 @@ import { ArrowLeft, FolderOpen } from 'lucide-react';
 
 interface TestingHeaderProps {
   projectId: number;
+  projectName?: string;
+  chatTitle?: string;
   onBack: () => void;
 }
 
-export function TestingHeader({ projectId, onBack }: TestingHeaderProps) {
+export function TestingHeader({ projectId, projectName, chatTitle, onBack }: TestingHeaderProps) {
   const router = useRouter();
 
   return (
@@ -32,8 +34,8 @@ export function TestingHeader({ projectId, onBack }: TestingHeaderProps) {
           <div className="flex items-center gap-2">
             <FolderOpen size={20} className="text-muted-foreground" />
             <div>
-              <h1 className="text-lg font-semibold text-foreground">Testing Studio</h1>
-              <p className="text-sm text-muted-foreground">Project #{projectId}</p>
+              <h1 className="text-lg font-semibold text-foreground">{chatTitle || 'Testing Studio'}</h1>
+              <p className="text-sm text-muted-foreground">{projectName || `Project #${projectId}`}</p>
             </div>
           </div>
         </div>

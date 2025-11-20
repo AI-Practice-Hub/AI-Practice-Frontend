@@ -109,27 +109,26 @@ export default function ProjectsPage() {
                 <p className="text-sm font-medium mb-4">
                   Status: <span className="capitalize">{project.status}</span>
                 </p>
-                <div className="flex flex-wrap gap-2">
+                <div className="grid grid-cols-2 gap-2">
                   <Button 
-                    className="flex-1 bg-blue-500 text-white border border-blue-500"
+                    className="bg-blue-500 text-white border border-blue-500"
                     onClick={() => setTestingModalProjectId(project.id)}
                   >
                     <TestTube className="w-4 h-4 mr-2" />
                     Quick Test
                   </Button>
                   <Button
-                    className="flex-1 bg-blue-500 text-white border border-blue-500"
+                    className="bg-blue-500 text-white border border-blue-500"
                     onClick={() => setUrlTestingModalProjectId(project.id)}
                   >
                     <Globe className="w-4 h-4 mr-2" />
                     URL Test
                   </Button>
-                  <Button variant="outline" className="flex-1" onClick={() => router.push(`/dashboard/projects/${project.id}/sessions`)}>
+                  <Button variant="outline" onClick={() => router.push(`/dashboard/projects/${project.id}/sessions`)}>
                     View Details
                   </Button>
-                  <Link href={`/chat?projectId=${project.id}`}>
-                    <Button variant="outline" className="flex-1">
-                      <MessageCircle className="w-4 h-4 mr-2" />
+                  <Link href={`/chat?projectId=${project.id}`} className="block w-full">
+                    <Button variant="outline" className="w-full">
                       Chat
                     </Button>
                   </Link>

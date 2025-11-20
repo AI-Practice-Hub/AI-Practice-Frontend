@@ -318,6 +318,20 @@ def create_chat(chat: ChatCreate, db: Session = Depends(get_db), user_id: int = 
     db.refresh(new_chat)
     return new_chat
 
+@router.get("/chat/{chat_id}/details")
+def get_chat_details(chat_id: int, db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
+    """Get chat title and project name based on chat_id"""
+    chat = db.query(Chat).join(Chat.project).filter(Chat.id == chat_id, Project.user_id == user_id).first()
+    if not chat:
+        raise HTTPException(status_code=404, detail="Chat not found or unauthorized")
+    
+    return {
+        "chat_id": chat.id,
+        "chat_title": chat.title,
+        "project_id": chat.project_id,
+        "project_name": chat.project.name
+    }
+
 @router.get("/chat/", response_model=List[ChatOut])
 def list_chats(project_id: Optional[int] = Query(None), db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
     query = db.query(Chat).filter(Chat.user_id == user_id)

@@ -60,19 +60,20 @@ export const BaseSidebar = React.memo(function BaseSidebar({ navItems, open, onT
       </div>
 
       {/* Nav Items */}
-      <nav className="flex-1 overflow-y-auto px-4 py-4 custom-scrollbar">
+      <nav className={`flex-1 overflow-y-auto ${open ? 'px-4' : 'px-2'} py-4 custom-scrollbar`}>
         {navItems.map((item) => (
           <a
             key={item.url}
             href={item.url}
             className={`
-              flex items-center gap-3 px-4 py-3 rounded-lg transition-smooth mb-2
+              flex items-center ${open ? 'gap-3 px-4' : 'justify-center px-2'} py-3 rounded-lg transition-smooth mb-2
               ${item.isActive
                 ? 'bg-sidebar-accent text-sidebar-primary font-medium'
                 : 'text-sidebar-foreground hover:bg-sidebar-accent/50'
               }
             `}
             aria-label={`Navigate to ${item.title}`}
+            title={!open ? item.title : undefined}
           >
             <item.icon size={20} />
             {open && <span>{item.title}</span>}
@@ -82,7 +83,7 @@ export const BaseSidebar = React.memo(function BaseSidebar({ navItems, open, onT
 
       {/* Footer */}
       {footer && (
-        <div className="p-4">
+        <div className={`${open ? 'p-4' : 'p-2'} ${!open ? 'flex items-center justify-center' : ''}`}>
           {footer}
         </div>
       )}
