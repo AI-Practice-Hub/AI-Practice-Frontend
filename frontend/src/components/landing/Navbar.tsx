@@ -9,7 +9,7 @@ export function Navbar() {
           <div className="w-10 h-10 rounded-xl gradient-primary flex items-center justify-center shadow-glow">
             <span className="text-white font-bold text-xl">C2T</span>
           </div>
-          <span className="text-foreground font-bold text-2xl">Chat2Test</span>
+          <span className="text-foreground font-bold text-2xl">TestSamurAi</span>
         </div>
 
         <nav className="hidden md:flex items-center gap-8">

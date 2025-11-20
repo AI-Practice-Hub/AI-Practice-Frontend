@@ -27,7 +27,7 @@ export function FeaturesSection() {
   return (
     <section id="features" className="container mx-auto px-6 py-20">
       <h2 className="text-4xl font-bold text-center mb-12">
-        Why Choose Chat2Text?
+        Why Choose TestSamurAi?
       </h2>
       <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
         {features.map((feature) => (

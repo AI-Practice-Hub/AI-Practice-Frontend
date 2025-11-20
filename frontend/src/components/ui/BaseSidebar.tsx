@@ -15,9 +15,10 @@ interface BaseSidebarProps {
   onToggle: () => void;
   // Title can be a string or a React node (logo image)
   title?: React.ReactNode;
+  footer?: React.ReactNode;
 }
 
-export const BaseSidebar = React.memo(function BaseSidebar({ navItems, open, onToggle, title = "Menu" }: BaseSidebarProps) {
+export const BaseSidebar = React.memo(function BaseSidebar({ navItems, open, onToggle, title = "Menu", footer }: BaseSidebarProps) {
   return (
     <aside
       className={`
@@ -78,6 +79,13 @@ export const BaseSidebar = React.memo(function BaseSidebar({ navItems, open, onT
           </a>
         ))}
       </nav>
+
+      {/* Footer */}
+      {footer && (
+        <div className="p-4">
+          {footer}
+        </div>
+      )}
     </aside>
   );
 });

@@ -19,7 +19,7 @@ export function HeroSection() {
           In Your Own Language
         </h1>
         <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-          Chat2Text uses AI to understand your testing requirements in natural language
+          TestSamurAi uses AI to understand your testing requirements in natural language
           and automatically generates comprehensive test suites for your web applications.
         </p>
         <div className="flex gap-4 justify-center">
