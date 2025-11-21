@@ -162,10 +162,12 @@ export default function TestCasesPage() {
       for (const testCase of selectedTestCases) {
         try {
           const response = await api.post('/chat/jira_integration', {
-            test_case_unique_id: testCase.test_case_unique_id || testCase.test_case_id
+            test_case_unique_id: testCase.test_case_unique_id || testCase.test_case_id,
+            project_id: parseInt(projectId as string)
           });
 
-          if (response.data.success) {
+          // Backend returns {"status":"success","issue_key":"AT-18"} on success
+          if (response.data.status === 'success') {
             successCount++;
           } else {
             failCount++;

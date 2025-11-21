@@ -11,8 +11,10 @@ import { useToast } from '@/hooks/useToast';
 export default function SettingsPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [name, setName] = useState('');
   const [jiraEmail, setJiraEmail] = useState('');
   const [jiraApiToken, setJiraApiToken] = useState('');
+  const [jiraApiUrl, setJiraApiUrl] = useState('');
   const toast = useToast();
 
   useEffect(() => {
@@ -22,8 +24,10 @@ export default function SettingsPage() {
   const loadUserData = async () => {
     try {
       const response = await api.get('/user/me');
+      setName(response.data.name || '');
       setJiraEmail(response.data.jira_email || '');
       setJiraApiToken(response.data.jira_api_token || '');
+      setJiraApiUrl(response.data.jira_api_url || '');
     } catch (error) {
       console.error('Failed to load user data:', error);
       toast.error('Failed to load settings');
@@ -36,10 +40,12 @@ export default function SettingsPage() {
     setSaving(true);
     try {
       await api.put('/user/me', {
+        name: name || null,
         jira_email: jiraEmail || null,
         jira_api_token: jiraApiToken || null,
+        jira_api_url: jiraApiUrl || null,
       });
-      toast.success('Jira integration settings saved successfully');
+      toast.success('Settings saved successfully');
     } catch (error) {
       console.error('Failed to save settings:', error);
       toast.error('Failed to save settings');
@@ -66,6 +72,30 @@ export default function SettingsPage() {
         <p className="text-muted-foreground">Manage your account and application settings</p>
       </div>
 
+      {/* Account Settings */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Account Settings</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <p className="text-sm text-muted-foreground mb-4">
+            Update your personal information and account preferences.
+          </p>
+          <div>
+            <Label htmlFor="name">Name</Label>
+            <Input 
+              id="name" 
+              type="text"
+              placeholder="Enter your name" 
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              disabled={saving}
+            />
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Jira Integration */}
       <Card>
         <CardHeader>
           <CardTitle>Jira Integration</CardTitle>
@@ -74,6 +104,17 @@ export default function SettingsPage() {
           <p className="text-sm text-muted-foreground mb-4">
             Configure your Jira credentials to enable test case sync and project integration.
           </p>
+          <div>
+            <Label htmlFor="jira-api-url">Jira API URL</Label>
+            <Input 
+              id="jira-api-url" 
+              type="url"
+              placeholder="https://your-domain.atlassian.net" 
+              value={jiraApiUrl}
+              onChange={(e) => setJiraApiUrl(e.target.value)}
+              disabled={saving}
+            />
+          </div>
           <div>
             <Label htmlFor="jira-email">Jira Email</Label>
             <Input 
@@ -107,11 +148,15 @@ export default function SettingsPage() {
               </a>
             </p>
           </div>
-          <Button onClick={handleSave} disabled={saving}>
-            {saving ? 'Saving...' : 'Save Changes'}
-          </Button>
         </CardContent>
       </Card>
+
+      {/* Save Button */}
+      <div className="flex justify-end">
+        <Button onClick={handleSave} disabled={saving}>
+          {saving ? 'Saving...' : 'Save Changes'}
+        </Button>
+      </div>
     </div>
   );
 }

@@ -720,12 +720,16 @@ def execute_from_mongo(payload: dict, db: Session = Depends(get_db), user_id: in
 def jira_integration(payload: dict, db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
     """
     Send a test case to Jira.
-    Expects: { "test_case_unique_id": "<id>" }
+    Expects: { "test_case_unique_id": "<id>", "project_id": <id> }
     """
     test_case_unique_id = payload.get('test_case_unique_id')
+    project_id = payload.get('project_id')
     
     if not test_case_unique_id:
         raise HTTPException(status_code=400, detail='test_case_unique_id is required')
+    
+    if not project_id:
+        raise HTTPException(status_code=400, detail='project_id is required')
     
     # Get user's Jira credentials
     user = db.query(User).filter(User.id == user_id).first()
@@ -738,6 +742,12 @@ def jira_integration(payload: dict, db: Session = Depends(get_db), user_id: int 
             detail='Jira credentials not configured. Please add your Jira email and API token in Settings.'
         )
     
+    if not user.jira_api_url:
+        raise HTTPException(
+            status_code=400, 
+            detail='Jira API URL not configured. Please add your Jira API URL in Settings.'
+        )
+    
     # Find the test case
     test_case = None
     for tc in TEST_CASES:
@@ -748,14 +758,24 @@ def jira_integration(payload: dict, db: Session = Depends(get_db), user_id: int 
     if not test_case:
         raise HTTPException(status_code=404, detail='Test case not found')
     
+    # Get project's jira_project_id from the database
+    project = db.query(Project).filter(Project.id == project_id, Project.user_id == user_id).first()
+    if not project:
+        raise HTTPException(status_code=404, detail='Project not found')
+    
+    if not project.jira_project_id:
+        raise HTTPException(
+            status_code=400, 
+            detail='Project not linked to Jira. Please configure Jira Project ID in project settings.'
+        )
+    
     # Mock Jira integration - in production, this would make actual API calls to Jira
     # For now, we'll just simulate success
     try:
         # Here you would typically:
-        # 1. Get project's jira_project_id from the database
-        # 2. Format the test case data for Jira API
-        # 3. Make POST request to Jira API to create issue/test case
-        # 4. Handle Jira API response
+        # 1. Format the test case data for Jira API
+        # 2. Make POST request to Jira API to create issue/test case using user.jira_api_url
+        # 3. Handle Jira API response
         
         # Mock response
         jira_issue_key = f"PROJ-{random.randint(1000, 9999)}"

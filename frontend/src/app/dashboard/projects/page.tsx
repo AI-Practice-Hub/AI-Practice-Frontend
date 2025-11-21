@@ -5,29 +5,30 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/Button';
-import { Input } from '@/components/ui/Input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { useProject } from '@/hooks/useProject';
 import { Project } from '@/types/project';
-import { MessageCircle, Plus, TestTube, Globe } from 'lucide-react';
+import { MessageCircle, Plus, TestTube, Globe, Settings } from 'lucide-react';
 import UrlTestingModal from '@/components/testing/UrlTestingModal';
 import { TestingSessionModal } from '@/components/testing/TestingSessionModal';
+import { ProjectModal } from '@/components/projects/ProjectModal';
+import { useToast } from '@/hooks/useToast';
 
 export default function ProjectsPage() {
-  const { getProjects, createProject, loading, error } = useProject();
+  const { getProjects, createProject, updateProject, loading, error } = useProject();
+  const toast = useToast();
   const router = useRouter();
   const [projects, setProjects] = useState<Project[]>([]);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editingProject, setEditingProject] = useState<Project | null>(null);
   const [testingModalProjectId, setTestingModalProjectId] = useState<number | null>(null);
   const [urlTestingModalProjectId, setUrlTestingModalProjectId] = useState<number | null>(null);
-  const [newProject, setNewProject] = useState({
+  const [formData, setFormData] = useState({
     name: '',
     description: '',
     jira_project_id: '',
   });
-  const [isCreating, setIsCreating] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     const fetchProjects = async () => {
@@ -42,24 +43,60 @@ export default function ProjectsPage() {
   }, [getProjects]);
 
   const handleCreateProject = async () => {
-    if (!newProject.name.trim()) return;
+    if (!formData.name.trim()) return;
 
-    setIsCreating(true);
+    setIsSubmitting(true);
     try {
       const createdProject = await createProject({
-        name: newProject.name.trim(),
-        description: newProject.description.trim() || undefined,
+        name: formData.name.trim(),
+        description: formData.description.trim() || undefined,
         status: 'active',
-        jira_project_id: newProject.jira_project_id.trim() || undefined,
+        jira_project_id: formData.jira_project_id.trim() || undefined,
       });
       
       setProjects(prev => [createdProject, ...prev]);
-      setNewProject({ name: '', description: '', jira_project_id: '' });
+      setFormData({ name: '', description: '', jira_project_id: '' });
       setIsCreateModalOpen(false);
+      toast.success('Project created successfully');
     } catch (err) {
       console.error('Failed to create project:', err);
+      toast.error('Failed to create project');
     } finally {
-      setIsCreating(false);
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleEditClick = (project: Project) => {
+    setEditingProject(project);
+    setFormData({
+      name: project.name,
+      description: project.description || '',
+      jira_project_id: project.jira_project_id || '',
+    });
+    setIsEditModalOpen(true);
+  };
+
+  const handleUpdateProject = async () => {
+    if (!editingProject || !formData.name.trim()) return;
+
+    setIsSubmitting(true);
+    try {
+      const updatedProject = await updateProject(editingProject.id, {
+        name: formData.name.trim(),
+        description: formData.description.trim() || undefined,
+        status: editingProject.status,
+        jira_project_id: formData.jira_project_id.trim() || undefined,
+      });
+      
+      setProjects(prev => prev.map(p => p.id === updatedProject.id ? updatedProject : p));
+      setIsEditModalOpen(false);
+      setEditingProject(null);
+      toast.success('Project updated successfully');
+    } catch (err) {
+      console.error('Failed to update project:', err);
+      toast.error('Failed to update project');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -102,7 +139,17 @@ export default function ProjectsPage() {
           {projects.map((project) => (
             <Card key={project.id} className="relative">
               <CardHeader>
-                <CardTitle>{project.name}</CardTitle>
+                <div className="flex justify-between items-start">
+                  <CardTitle>{project.name}</CardTitle>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handleEditClick(project)}
+                    className="h-8 w-8 p-0"
+                  >
+                    <Settings className="h-4 w-4" />
+                  </Button>
+                </div>
               </CardHeader>
               <CardContent>
                 <p className="text-sm text-muted-foreground mb-4">
@@ -142,64 +189,31 @@ export default function ProjectsPage() {
       )}
 
       {/* Create Project Modal */}
-      <Dialog open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Create New Project</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div>
-              <Label htmlFor="project-name">Project Name *</Label>
-              <Input
-                id="project-name"
-                value={newProject.name}
-                onChange={(e) => setNewProject(prev => ({ ...prev, name: e.target.value }))}
-                placeholder="Enter project name"
-                disabled={isCreating}
-              />
-            </div>
-            <div>
-              <Label htmlFor="project-description">Description</Label>
-              <Textarea
-                id="project-description"
-                value={newProject.description}
-                onChange={(e) => setNewProject(prev => ({ ...prev, description: e.target.value }))}
-                placeholder="Enter project description (optional)"
-                rows={3}
-                disabled={isCreating}
-              />
-            </div>
-            <div>
-              <Label htmlFor="jira-project-id">Jira Project ID</Label>
-              <Input
-                id="jira-project-id"
-                value={newProject.jira_project_id}
-                onChange={(e) => setNewProject(prev => ({ ...prev, jira_project_id: e.target.value }))}
-                placeholder="e.g., PROJ, TEST (optional)"
-                disabled={isCreating}
-              />
-              <p className="text-xs text-muted-foreground mt-1">
-                Enter the Jira project key to link this project with Jira
-              </p>
-            </div>
-          </div>
-          <DialogFooter>
-            <Button 
-              variant="outline" 
-              onClick={() => setIsCreateModalOpen(false)}
-              disabled={isCreating}
-            >
-              Cancel
-            </Button>
-            <Button 
-              onClick={handleCreateProject}
-              disabled={!newProject.name.trim() || isCreating}
-            >
-              {isCreating ? 'Creating...' : 'Create Project'}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <ProjectModal
+        open={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
+        onSubmit={handleCreateProject}
+        title="Create New Project"
+        formData={formData}
+        setFormData={setFormData}
+        isSubmitting={isSubmitting}
+        submitLabel="Create Project"
+      />
+
+      {/* Edit Project Modal */}
+      <ProjectModal
+        open={isEditModalOpen}
+        onClose={() => {
+          setIsEditModalOpen(false);
+          setEditingProject(null);
+        }}
+        onSubmit={handleUpdateProject}
+        title="Edit Project"
+        formData={formData}
+        setFormData={setFormData}
+        isSubmitting={isSubmitting}
+        submitLabel="Update Project"
+      />
 
       {/* Testing Session Modal */}
       <TestingSessionModal

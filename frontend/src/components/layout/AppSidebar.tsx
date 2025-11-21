@@ -70,8 +70,10 @@ export function AppSidebar({ open, onToggle, variant }: AppSidebarProps) {
     setTheme(theme === 'dark' ? 'light' : 'dark');
   };
 
-  const displayName = user?.email?.split('@')[0] || 'User';
-  const initials = displayName.substring(0, 2).toUpperCase();
+  const displayName = user?.name || user?.email?.split('@')[0] || 'User';
+  const initials = user?.name 
+    ? user.name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2)
+    : displayName.substring(0, 2).toUpperCase();
 
   return (
     <BaseSidebar

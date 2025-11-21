@@ -66,9 +66,9 @@ export function UrlTestingModal({ projectId, open, onClose }: UrlTestingModalPro
         suggestion: suggestions || undefined,
       });
 
-      // Close and navigate to testing page
+      // Close and navigate to test-cases page
       onClose();
-      router.push(`/dashboard/projects/${projectId}/testing?chatId=${newChat.id}`);
+      router.push(`/dashboard/projects/${projectId}/test-cases?chatId=${newChat.id}`);
     } catch (error) {
       console.error('Failed to start URL exploration', error);
       setError("Failed to start exploration. Please check the console for details.");

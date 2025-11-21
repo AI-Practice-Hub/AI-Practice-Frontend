@@ -22,9 +22,11 @@ class UserCreate(UserBase):
 class UserOut(BaseModel):
     id: int
     email: str
+    name: Optional[str] = None
     username: Optional[str] = None
     jira_email: Optional[str] = None
     jira_api_token: Optional[str] = None
+    jira_api_url: Optional[str] = None
     created_at: datetime
 
     model_config = {
@@ -34,8 +36,10 @@ class UserOut(BaseModel):
 
 
 class UserUpdate(BaseModel):
+    name: Optional[str] = None
     jira_email: Optional[str] = None
     jira_api_token: Optional[str] = None
+    jira_api_url: Optional[str] = None
 
 
 class UserLogin(BaseModel):

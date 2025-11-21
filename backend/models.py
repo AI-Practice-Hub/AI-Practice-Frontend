@@ -8,10 +8,12 @@ class User(Base):
     __tablename__ = "users"
     id = Column(Integer, primary_key=True, index=True)
     email = Column(String, unique=True, index=True, nullable=False)
+    name = Column(String, nullable=True)
     username = Column(String, unique=True, index=True, nullable=True)
     hashed_password = Column(String, nullable=False)
     jira_email = Column(String, nullable=True)
     jira_api_token = Column(String, nullable=True)
+    jira_api_url = Column(String, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
     chats = relationship("Chat", back_populates="user")
     projects = relationship("Project", back_populates="user")

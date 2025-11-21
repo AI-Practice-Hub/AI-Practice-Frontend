@@ -48,10 +48,14 @@ def update_current_user(user_update: schemas.UserUpdate, db: Session = Depends(g
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     
+    if user_update.name is not None:
+        user.name = user_update.name
     if user_update.jira_email is not None:
         user.jira_email = user_update.jira_email
     if user_update.jira_api_token is not None:
         user.jira_api_token = user_update.jira_api_token
+    if user_update.jira_api_url is not None:
+        user.jira_api_url = user_update.jira_api_url
     
     db.commit()
     db.refresh(user)

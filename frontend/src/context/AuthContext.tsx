@@ -23,12 +23,20 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   // Initialize auth state from localStorage on mount
   useEffect(() => {
-    const initAuth = () => {
+    const initAuth = async () => {
       const storedToken = getToken();
       if (storedToken) {
         setTokenState(storedToken);
-        // TODO: Optionally fetch user info from backend using token
-        // For now, we'll just set authenticated state
+        // Fetch user info from backend using token
+        try {
+          const response = await api.get<User>('/user/me');
+          setUser(response.data);
+        } catch (error) {
+          console.error('Failed to fetch user info:', error);
+          // Token might be invalid, clear it
+          removeToken();
+          setTokenState(null);
+        }
       }
       setLoading(false);
     };
@@ -46,9 +54,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         saveToken(access_token);
         setTokenState(access_token);
         
-        // TODO: Optionally decode JWT to get user info
-        // For now, we'll set a basic user object
-        setUser({ id: 0, email: credentials.email });
+        // Fetch user info from backend
+        try {
+          const userResponse = await api.get<User>('/user/me');
+          setUser(userResponse.data);
+        } catch (error) {
+          console.error('Failed to fetch user info:', error);
+          // Set basic user object as fallback
+          setUser({ id: 0, email: credentials.email });
+        }
         
         // Redirect to dashboard page
         router.push(ROUTES.DASHBOARD);
