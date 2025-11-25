@@ -58,7 +58,7 @@ export function ChatSidebar({
         {open ? (
           <>
             <span className="font-bold text-lg flex-1 text-sidebar-foreground">
-              Chats
+              TestSamurAI
             </span>
             <Button
               variant="ghost"

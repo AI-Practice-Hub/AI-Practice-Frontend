@@ -19,12 +19,12 @@ export function HeroSection() {
           In Your Own Language
         </h1>
         <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-          TestSamurAi uses AI to understand your testing requirements in natural language
+          TestSamurAI uses AI to understand your testing requirements in natural language
           and automatically generates comprehensive test suites for your web applications.
         </p>
         <div className="flex gap-4 justify-center">
           <Button asChild size="lg">
-            <Link href="/chat">
+            <Link href="/dashboard">
               Start Testing Now
             </Link>
           </Button>

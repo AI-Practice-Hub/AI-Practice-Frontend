@@ -16,7 +16,7 @@ interface ChatHeaderProps {
 }
 
 export function ChatHeader({
-  title = 'TestSamurAi',
+  title = 'TestSamurAI',
   onMenuClick,
   user,
   onLogout,

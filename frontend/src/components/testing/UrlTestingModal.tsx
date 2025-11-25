@@ -150,7 +150,7 @@ export function UrlTestingModal({ projectId, open, onClose }: UrlTestingModalPro
             Cancel
           </Button>
           <Button onClick={handleStartExplore} disabled={isSubmitting || !sessionName.trim() || !url.trim()}>
-            {isSubmitting ? 'Starting...' : 'Start URL Test'}
+            {isSubmitting ? 'Starting...' : 'Start Test Discovery'}
           </Button>
         </DialogFooter>
       </DialogContent>

@@ -8,7 +8,7 @@ export function CTASection() {
           Ready to Automate Your Testing?
         </h2>
         <p className="text-xl text-muted-foreground mb-8">
-          Join thousands of developers who trust TestSamurAi for their testing needs.
+          Join thousands of developers who trust TestSamurAI for their testing needs.
         </p>
         <Link
           href="/signup"

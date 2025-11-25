@@ -170,8 +170,8 @@ export default function ProjectsPage() {
                     className="bg-blue-500 text-white border border-blue-500"
                     onClick={() => setUrlTestingModalProjectId(project.id)}
                   >
-                    <Globe className="w-4 h-4 mr-2" />
-                    URL Test
+                  <Globe className="w-4 h-4 mr-2" />
+                    AI Test Discovery
                   </Button>
                   <Button variant="outline" onClick={() => router.push(`/dashboard/projects/${project.id}/sessions`)}>
                     View Details

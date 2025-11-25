@@ -63,7 +63,7 @@ export default function DashboardPage() {
       color: "text-blue-600"
     },
     {
-      title: "Total Chats",
+      title: "Total Sessions",
       value: loading ? "..." : stats.totalChats.toString(),
       change: "Conversations started",
       icon: MessageCircle,
@@ -90,7 +90,7 @@ export default function DashboardPage() {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h1 className="text-3xl font-bold text-foreground">Dashboard</h1>
-          <p className="text-muted-foreground">Welcome to your TestSamurAi dashboard</p>
+          <p className="text-muted-foreground">Welcome to your TestSamurAI dashboard</p>
         </div>
         <Link href="/dashboard/projects">
           <Button className="flex items-center gap-2">

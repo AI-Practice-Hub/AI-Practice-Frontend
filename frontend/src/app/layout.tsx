@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "TestSamurAi",
+  title: "TestSamurAI",
   description: "AI-powered testing automation platform",
   icons: {
     icon: [

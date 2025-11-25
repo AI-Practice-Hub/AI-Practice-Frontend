@@ -82,7 +82,8 @@ export function AppSidebar({ open, onToggle, variant }: AppSidebarProps) {
       onToggle={onToggle}
       title={
           <div className="flex items-center gap-2">
-            <img src="/company-logo.png" alt="TestSamurai" className="h-10 w-auto bg-white p-1 rounded-md shadow-sm" />
+            {/* <img src="/company-logo.png" alt="TestSamurAI" className="h-10 w-auto bg-white p-1 rounded-md shadow-sm" /> */}
+          TestSamurAI
           </div>
       }
       footer={
