@@ -53,6 +53,7 @@ export function UrlTestingModal({ projectId, open, onClose }: UrlTestingModalPro
       const chatResponse = await api.post('/chat/', {
         project_id: projectId,
         title: sessionName.trim(),
+        chat_type: 'test_case_discovery'
       });
 
       const newChat = chatResponse.data;

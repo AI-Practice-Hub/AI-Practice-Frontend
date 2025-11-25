@@ -29,7 +29,8 @@ export function TestingSessionModal({ projectId, open, onClose }: TestingSession
       // Create a new chat for this testing session
       const chatData = {
         project_id: projectId,
-        title: sessionName.trim()
+        title: sessionName.trim(),
+        chat_type: 'quick_session'
       };
 
       const response = await api.post('/chat/', chatData);

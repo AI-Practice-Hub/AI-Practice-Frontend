@@ -66,7 +66,8 @@ export function useChat(projectId?: number): UseChatReturn {
     try {
       const res = await api.post('/chat/', { 
         title,
-        project_id: projectIdParam || projectId 
+        project_id: projectIdParam || projectId,
+        chat_type: 'general_chat'
       });
       const newChat = res.data;
       setChats((prev) => [newChat, ...prev]);
