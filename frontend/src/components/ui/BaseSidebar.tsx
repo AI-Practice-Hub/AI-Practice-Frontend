@@ -15,10 +15,11 @@ interface BaseSidebarProps {
   onToggle: () => void;
   // Title can be a string or a React node (logo image)
   title?: React.ReactNode;
+  beforeFooter?: React.ReactNode;
   footer?: React.ReactNode;
 }
 
-export const BaseSidebar = React.memo(function BaseSidebar({ navItems, open, onToggle, title = "Menu", footer }: BaseSidebarProps) {
+export const BaseSidebar = React.memo(function BaseSidebar({ navItems, open, onToggle, title = "Menu", beforeFooter, footer }: BaseSidebarProps) {
   return (
     <aside
       className={`
@@ -81,9 +82,16 @@ export const BaseSidebar = React.memo(function BaseSidebar({ navItems, open, onT
         ))}
       </nav>
 
+      {/* Before Footer - Powered By Section */}
+      {beforeFooter && (
+        <div className={`border-t border-sidebar-border ${open ? 'px-4 py-2' : 'px-2 py-1'} ${!open ? 'flex items-center justify-center' : ''}`}>
+          {beforeFooter}
+        </div>
+      )}
+
       {/* Footer */}
       {footer && (
-        <div className={`${open ? 'p-4' : 'p-2'} ${!open ? 'flex items-center justify-center' : ''}`}>
+        <div className={`${open ? 'px-2 pt-2 pb-2' : 'p-2'} ${!open ? 'flex items-center justify-center' : ''}`}>
           {footer}
         </div>
       )}

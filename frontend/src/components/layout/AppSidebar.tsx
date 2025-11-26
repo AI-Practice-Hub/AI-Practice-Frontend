@@ -80,11 +80,16 @@ export function AppSidebar({ open, onToggle, variant }: AppSidebarProps) {
       navItems={itemsWithActive}
       open={open}
       onToggle={onToggle}
-      title={
+      title="TestSamurAI"
+      beforeFooter={
+        open ? (
           <div className="flex items-center gap-2">
-            {/* <img src="/company-logo.png" alt="TestSamurAI" className="h-10 w-auto bg-white p-1 rounded-md shadow-sm" /> */}
-          TestSamurAI
+            <span className="text-[10px] text-muted-foreground">Powered by</span>
+            <img src="/company-logo.png" alt="Company Logo" className="h-7 w-20 brightness-0 invert" />
           </div>
+        ) : (
+          <img src="/company-logo.png" alt="Company Logo" className="h-6 w- 12 brightness-0 invert" />
+        )
       }
       footer={
         <DropdownMenu>
