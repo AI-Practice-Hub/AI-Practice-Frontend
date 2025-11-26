@@ -7,7 +7,7 @@ export function Navbar() {
       <div className="container mx-auto px-6 py-4 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <div className="w-10 h-10 rounded-xl gradient-primary flex items-center justify-center shadow-glow">
-            <span className="text-white font-bold text-xl">C2T</span>
+            <span className="text-white font-bold text-xl">TSA</span>
           </div>
           <span className="text-foreground font-bold text-2xl">TestSamurAI</span>
         </div>
