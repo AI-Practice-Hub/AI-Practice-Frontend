@@ -6,16 +6,22 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/badge';
 import { Project } from '@/types/project';
-import { TestTube, MessageCircle, Calendar } from 'lucide-react';
+import { TestTube, MessageCircle, Calendar, Trash2 } from 'lucide-react';
 import { TestingSessionModal } from '@/components/testing/TestingSessionModal';
+import { useProject } from '@/hooks/useProject';
+import { useToast } from '@/hooks/useToast';
 
 interface ProjectCardProps {
   project: Project;
+  onDelete?: () => void;
 }
 
-export function ProjectCard({ project }: ProjectCardProps) {
+export function ProjectCard({ project, onDelete }: ProjectCardProps) {
   const router = useRouter();
+  const { deleteProject } = useProject();
+  const { showToast } = useToast();
   const [showTestingModal, setShowTestingModal] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const handleStartTesting = () => {
     setShowTestingModal(true);
@@ -23,6 +29,26 @@ export function ProjectCard({ project }: ProjectCardProps) {
 
   const handleOpenChat = () => {
     router.push(`/chat?projectId=${project.id}`);
+  };
+
+  const handleDelete = async () => {
+    if (!confirm(`Are you sure you want to delete "${project.name}"? This action cannot be undone.`)) {
+      return;
+    }
+
+    setIsDeleting(true);
+    try {
+      await deleteProject(project.id);
+      showToast('Project deleted successfully', 'success');
+      if (onDelete) {
+        onDelete();
+      }
+    } catch (error) {
+      console.error('Failed to delete project:', error);
+      showToast('Failed to delete project', 'error');
+    } finally {
+      setIsDeleting(false);
+    }
   };
 
   const getStatusColor = (status: string) => {
@@ -52,9 +78,21 @@ export function ProjectCard({ project }: ProjectCardProps) {
               </p>
             )}
           </div>
-          <Badge variant="outline" className={getStatusColor(project.status)}>
-            {project.status}
-          </Badge>
+          <div className="flex items-center gap-2">
+            <Badge variant="outline" className={getStatusColor(project.status)}>
+              {project.status}
+            </Badge>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleDelete}
+              disabled={isDeleting}
+              className="h-8 w-8 p-0 text-red-500 hover:text-red-700 hover:bg-red-50"
+              title="Delete project"
+            >
+              <Trash2 size={16} />
+            </Button>
+          </div>
         </div>
       </CardHeader>
 

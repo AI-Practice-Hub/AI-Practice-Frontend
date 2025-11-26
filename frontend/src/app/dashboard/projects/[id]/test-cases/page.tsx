@@ -42,9 +42,13 @@ export default function TestCasesPage() {
   const [loading, setLoading] = useState(true);
   const [executing, setExecuting] = useState(false);
   const [sendingToJira, setSendingToJira] = useState(false);
+  const [updatingComment, setUpdatingComment] = useState<string | null>(null);
   const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
   const [commentInputs, setCommentInputs] = useState<Record<string, string>>({});
   const toast = useToast();
+
+  // Computed state to check if any operation is in progress
+  const isAnyOperationInProgress = executing || sendingToJira || updatingComment !== null;
 
   useEffect(() => {
     if (chatId) {
@@ -152,14 +156,27 @@ export default function TestCasesPage() {
       return;
     }
 
+    // Filter only failed test cases from selection
+    const selectedTestCases = testCases.filter(tc => selectedCases.has(tc.test_case_id));
+    const failedTestCases = selectedTestCases.filter(tc => tc.status === 'Fail');
+
+    if (failedTestCases.length === 0) {
+      toast.info('Only failed test cases can be sent to Jira. Please select at least one failed test case.');
+      return;
+    }
+
+    // Show info if some selected cases are not failed
+    if (failedTestCases.length < selectedTestCases.length) {
+      const skippedCount = selectedTestCases.length - failedTestCases.length;
+      toast.info(`Only failed test cases will be sent to Jira. Skipping ${skippedCount} non-failed test case(s).`);
+    }
+
     setSendingToJira(true);
     let successCount = 0;
     let failCount = 0;
 
     try {
-      const selectedTestCases = testCases.filter(tc => selectedCases.has(tc.test_case_id));
-
-      for (const testCase of selectedTestCases) {
+      for (const testCase of failedTestCases) {
         try {
           const response = await api.post('/chat/jira_integration', {
             test_case_unique_id: testCase.test_case_unique_id || testCase.test_case_id,
@@ -179,7 +196,7 @@ export default function TestCasesPage() {
       }
 
       if (successCount > 0 && failCount === 0) {
-        toast.success(`Successfully sent ${successCount} test case(s) to Jira`);
+        toast.success(`Successfully sent ${successCount} failed test case(s) to Jira`);
       } else if (successCount > 0 && failCount > 0) {
         toast.info(`Sent ${successCount} test case(s) to Jira, ${failCount} failed`);
       } else {
@@ -207,6 +224,7 @@ export default function TestCasesPage() {
     const testCase = testCases.find(tc => tc.test_case_id === testCaseId);
     if (!testCase) return;
 
+    setUpdatingComment(testCaseId);
     try {
       // Update the test case with the user's comment
       const payload = {
@@ -225,6 +243,8 @@ export default function TestCasesPage() {
     } catch (err: any) {
       console.error('Failed to add comment', err);
       toast.error('Failed to add comment');
+    } finally {
+      setUpdatingComment(null);
     }
   };
 
@@ -305,21 +325,21 @@ export default function TestCasesPage() {
             </div>
           </div>
           <div className="flex gap-2">
-            <Button variant="outline" onClick={handleExport}>
+            <Button variant="outline" onClick={handleExport} disabled={isAnyOperationInProgress}>
               <Download className="w-4 h-4 mr-2" />
               Export
             </Button>
             <Button
               variant="outline"
               onClick={handleSendToJira}
-              disabled={selectedCases.size === 0 || sendingToJira}
+              disabled={selectedCases.size === 0 || isAnyOperationInProgress}
             >
               <Send className="w-4 h-4 mr-2" />
               {sendingToJira ? 'Sending...' : `Send to Jira (${selectedCases.size})`}
             </Button>
             <Button
               onClick={handleExecuteSelected}
-              disabled={selectedCases.size === 0 || executing}
+              disabled={selectedCases.size === 0 || isAnyOperationInProgress}
             >
               <Play className="w-4 h-4 mr-2" />
               {executing ? 'Executing...' : `Execute Selected (${selectedCases.size})`}
@@ -385,6 +405,7 @@ export default function TestCasesPage() {
                       <Checkbox
                           checked={selectedCases.size === testCases.length && testCases.length > 0}
                           onCheckedChange={handleSelectAll}
+                          disabled={isAnyOperationInProgress}
                       />
                     </th>
                     <th className="w-8 p-3"></th>
@@ -407,6 +428,7 @@ export default function TestCasesPage() {
                             <Checkbox
                               checked={isSelected}
                               onCheckedChange={() => toggleTestCaseSelection(testCase.test_case_id)}
+                              disabled={isAnyOperationInProgress}
                             />
                           </td>
                           <td className="p-3">
@@ -491,8 +513,11 @@ export default function TestCasesPage() {
                                         rows={2}
                                       />
                                       <div className="flex flex-col gap-2">
-                                        <Button onClick={() => handleAddComment(testCase.test_case_id)}>
-                                          Send
+                                        <Button 
+                                          onClick={() => handleAddComment(testCase.test_case_id)}
+                                          disabled={isAnyOperationInProgress}
+                                        >
+                                          {updatingComment === testCase.test_case_id ? 'Sending...' : 'Send'}
                                         </Button>
                                       </div>
                                     </div>

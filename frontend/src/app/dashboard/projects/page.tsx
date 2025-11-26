@@ -7,14 +7,14 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/Button';
 import { useProject } from '@/hooks/useProject';
 import { Project } from '@/types/project';
-import { MessageCircle, Plus, TestTube, Globe, Settings } from 'lucide-react';
+import { MessageCircle, Plus, TestTube, Globe, Settings, Trash2 } from 'lucide-react';
 import UrlTestingModal from '@/components/testing/UrlTestingModal';
 import { TestingSessionModal } from '@/components/testing/TestingSessionModal';
 import { ProjectModal } from '@/components/projects/ProjectModal';
 import { useToast } from '@/hooks/useToast';
 
 export default function ProjectsPage() {
-  const { getProjects, createProject, updateProject, loading, error } = useProject();
+  const { getProjects, createProject, updateProject, deleteProject, loading, error } = useProject();
   const toast = useToast();
   const router = useRouter();
   const [projects, setProjects] = useState<Project[]>([]);
@@ -100,6 +100,21 @@ export default function ProjectsPage() {
     }
   };
 
+  const handleDeleteProject = async (projectId: number, projectName: string) => {
+    if (!confirm(`Are you sure you want to delete "${projectName}"? This action cannot be undone.`)) {
+      return;
+    }
+
+    try {
+      await deleteProject(projectId);
+      setProjects(prev => prev.filter(p => p.id !== projectId));
+      toast.success('Project deleted successfully');
+    } catch (err) {
+      console.error('Failed to delete project:', err);
+      toast.error('Failed to delete project');
+    }
+  };
+
   if (loading && projects.length === 0) {
     return (
       <div className="p-6">
@@ -119,74 +134,85 @@ export default function ProjectsPage() {
   return (
     <div className="min-h-screen bg-background overflow-y-auto">
       <div className="p-6 space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold text-foreground">Projects</h1>
-          <p className="text-muted-foreground">Manage your testing projects</p>
+        <div className="flex justify-between items-center">
+          <div>
+            <h1 className="text-3xl font-bold text-foreground">Projects</h1>
+            <p className="text-muted-foreground">Manage your testing projects</p>
+          </div>
+          <Button onClick={() => setIsCreateModalOpen(true)}>
+            <Plus className="w-4 h-4 mr-2" />
+            New Project
+          </Button>
         </div>
-        <Button onClick={() => setIsCreateModalOpen(true)}>
-          <Plus className="w-4 h-4 mr-2" />
-          New Project
-        </Button>
-      </div>
 
-      {projects.length === 0 ? (
-        <div className="text-center py-8">
-          <p className="text-muted-foreground">No projects yet. Create your first project!</p>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {projects.map((project) => (
-            <Card key={project.id} className="relative">
-              <CardHeader>
-                <div className="flex justify-between items-start">
-                  <CardTitle>{project.name}</CardTitle>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => handleEditClick(project)}
-                    className="h-8 w-8 p-0"
-                  >
-                    <Settings className="h-4 w-4" />
-                  </Button>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-muted-foreground mb-4">
-                  {project.description || 'No description'}
-                </p>
-                <p className="text-sm font-medium mb-4">
-                  Status: <span className="capitalize">{project.status}</span>
-                </p>
-                <div className="grid grid-cols-2 gap-2">
-                  <Button 
-                    className="bg-blue-500 text-white border border-blue-500"
-                    onClick={() => setTestingModalProjectId(project.id)}
-                  >
-                    <TestTube className="w-4 h-4 mr-2" />
-                    Quick Test
-                  </Button>
-                  <Button
-                    className="bg-blue-500 text-white border border-blue-500"
-                    onClick={() => setUrlTestingModalProjectId(project.id)}
-                  >
-                  <Globe className="w-4 h-4 mr-2" />
-                    AI Test Discovery
-                  </Button>
-                  <Button variant="outline" onClick={() => router.push(`/dashboard/projects/${project.id}/sessions`)}>
-                    View Details
-                  </Button>
-                  <Link href={`/chat?projectId=${project.id}`} className="block w-full">
-                    <Button variant="outline" className="w-full">
-                      Chat
+        {projects.length === 0 ? (
+          <div className="text-center py-8">
+            <p className="text-muted-foreground">No projects yet. Create your first project!</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {projects.map((project) => (
+              <Card key={project.id} className="relative">
+                <CardHeader>
+                  <div className="flex justify-between items-start">
+                    <CardTitle>{project.name}</CardTitle>
+                    <div className="flex gap-1">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleEditClick(project)}
+                        className="h-8 w-8 p-0"
+                      >
+                        <Settings className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleDeleteProject(project.id, project.name)}
+                        className="h-8 w-8 p-0 text-red-500 hover:text-red-700 hover:bg-red-50"
+                        title="Delete project"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    {project.description || 'No description'}
+                  </p>
+                  <p className="text-sm font-medium mb-4">
+                    Status: <span className="capitalize">{project.status}</span>
+                  </p>
+                  <div className="grid grid-cols-2 gap-2">
+                    <Button 
+                      className="bg-blue-500 text-white border border-blue-500"
+                      onClick={() => setTestingModalProjectId(project.id)}
+                    >
+                      <TestTube className="w-4 h-4 mr-2" />
+                      Quick Test
                     </Button>
-                  </Link>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      )}
+                    <Button
+                      className="bg-blue-500 text-white border border-blue-500"
+                      onClick={() => setUrlTestingModalProjectId(project.id)}
+                    >
+                      <Globe className="w-4 h-4 mr-2" />
+                      AI Test Discovery
+                    </Button>
+                    <Button variant="outline" onClick={() => router.push(`/dashboard/projects/${project.id}/sessions`)}>
+                      View Details
+                    </Button>
+                    <Link href={`/chat?projectId=${project.id}`} className="block w-full">
+                      <Button variant="outline" className="w-full">
+                        Chat
+                      </Button>
+                    </Link>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
 
       {/* Create Project Modal */}
       <ProjectModal
