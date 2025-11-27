@@ -12,6 +12,7 @@ import UrlTestingModal from '@/components/testing/UrlTestingModal';
 import { TestingSessionModal } from '@/components/testing/TestingSessionModal';
 import { ProjectModal } from '@/components/projects/ProjectModal';
 import { useToast } from '@/hooks/useToast';
+import { NotificationBell } from '@/components/ui/NotificationBell';
 
 export default function ProjectsPage() {
   const { getProjects, createProject, updateProject, deleteProject, loading, error } = useProject();
@@ -139,10 +140,13 @@ export default function ProjectsPage() {
             <h1 className="text-3xl font-bold text-foreground">Projects</h1>
             <p className="text-muted-foreground">Manage your testing projects</p>
           </div>
-          <Button onClick={() => setIsCreateModalOpen(true)}>
-            <Plus className="w-4 h-4 mr-2" />
-            New Project
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button onClick={() => setIsCreateModalOpen(true)}>
+              <Plus className="w-4 h-4 mr-2" />
+              New Project
+            </Button>
+            <NotificationBell />
+          </div>
         </div>
 
         {projects.length === 0 ? (

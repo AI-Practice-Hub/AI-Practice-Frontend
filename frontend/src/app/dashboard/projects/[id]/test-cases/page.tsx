@@ -10,6 +10,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Download, Play, CheckCircle, AlertCircle, ChevronDown, ChevronRight, Send } from 'lucide-react';
 import { api } from '@/lib/api';
 import { useToast } from '@/hooks/useToast';
+import { NotificationBell } from '@/components/ui/NotificationBell';
 
 interface TestCase {
   test_case_id: string;
@@ -324,7 +325,7 @@ export default function TestCasesPage() {
               <p className="text-muted-foreground">Review and execute generated test cases</p>
             </div>
           </div>
-          <div className="flex gap-2">
+          <div className="flex items-center gap-2">
             <Button variant="outline" onClick={handleExport} disabled={isAnyOperationInProgress}>
               <Download className="w-4 h-4 mr-2" />
               Export
@@ -344,6 +345,7 @@ export default function TestCasesPage() {
               <Play className="w-4 h-4 mr-2" />
               {executing ? 'Executing...' : `Execute Selected (${selectedCases.size})`}
             </Button>
+            <NotificationBell />
           </div>
         </div>
       </div>

@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, MessageSquare, Calendar, Play, Trash2 } from 'lucide-react';
 import { api } from '@/lib/api';
 import { TestingSessionModal } from '@/components/testing/TestingSessionModal';
+import { NotificationBell } from '@/components/ui/NotificationBell';
 
 interface ChatSession {
   id: number;
@@ -120,13 +121,16 @@ export default function ProjectSessionsPage() {
               <p className="text-muted-foreground">View and manage your testing sessions</p>
             </div>
           </div>
-          <Button
-            onClick={() => setIsNewSessionModalOpen(true)}
-            className="bg-blue-500 text-white"
-          >
-            <MessageSquare className="w-4 h-4 mr-2" />
-            New Session
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              onClick={() => setIsNewSessionModalOpen(true)}
+              className="bg-blue-500 text-white"
+            >
+              <MessageSquare className="w-4 h-4 mr-2" />
+              New Session
+            </Button>
+            <NotificationBell />
+          </div>
         </div>
       </div>
 

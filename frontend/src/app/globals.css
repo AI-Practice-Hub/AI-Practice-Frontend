@@ -239,3 +239,59 @@ All colors MUST be HSL.
     @apply bg-background text-foreground;
   }
 }
+
+/* Custom scrollbar styles for better UI/UX */
+.custom-scrollbar {
+  scrollbar-width: thin;
+}
+
+.light .custom-scrollbar {
+  scrollbar-color: hsl(var(--muted)) hsl(var(--background));
+}
+
+.dark .custom-scrollbar {
+  scrollbar-color: #444 #181818;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 8px;
+}
+
+.light .custom-scrollbar::-webkit-scrollbar {
+  background: hsl(var(--background));
+}
+
+.dark .custom-scrollbar::-webkit-scrollbar {
+  background: #181818;
+  border-radius: 8px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  border-radius: 8px;
+  min-height: 40px;
+}
+
+.light .custom-scrollbar::-webkit-scrollbar-thumb {
+  background: hsl(var(--muted));
+}
+
+.light .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--muted-foreground) / 0.3);
+}
+
+.dark .custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #444;
+}
+
+.dark .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #666;
+}
+
+.custom-scrollbar::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+/* Hide horizontal scrollbar */
+.custom-scrollbar {
+  overflow-x: hidden;
+}

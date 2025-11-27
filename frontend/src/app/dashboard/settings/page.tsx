@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/Input';
 import { Label } from '@/components/ui/label';
 import { api } from '@/lib/api';
 import { useToast } from '@/hooks/useToast';
+import { NotificationBell } from '@/components/ui/NotificationBell';
 
 export default function SettingsPage() {
   const [loading, setLoading] = useState(true);
@@ -67,9 +68,12 @@ export default function SettingsPage() {
 
   return (
     <div className="p-6 space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold text-foreground">Settings</h1>
-        <p className="text-muted-foreground">Manage your account and application settings</p>
+      <div className="flex justify-between items-start">
+        <div>
+          <h1 className="text-3xl font-bold text-foreground">Settings</h1>
+          <p className="text-muted-foreground">Manage your account and application settings</p>
+        </div>
+        <NotificationBell />
       </div>
 
       {/* Account Settings */}

@@ -4,6 +4,7 @@ import React from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/Button';
 import { ArrowLeft, FolderOpen } from 'lucide-react';
+import { NotificationBell } from '@/components/ui/NotificationBell';
 
 interface TestingHeaderProps {
   projectId: number;
@@ -44,6 +45,7 @@ export function TestingHeader({ projectId, projectName, chatTitle, onBack }: Tes
           <div className="text-sm text-muted-foreground">
             AI-Powered Test Generation
           </div>
+          <NotificationBell />
         </div>
       </div>
     </header>

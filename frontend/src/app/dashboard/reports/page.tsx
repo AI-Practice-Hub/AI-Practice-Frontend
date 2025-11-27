@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { NotificationBell } from '@/components/ui/NotificationBell';
 
 export default function ReportsPage() {
   // Dummy data for reports
@@ -13,9 +14,12 @@ export default function ReportsPage() {
 
   return (
     <div className="p-6 space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold text-foreground">Reports</h1>
-        <p className="text-muted-foreground">View and manage your test reports</p>
+      <div className="flex justify-between items-start">
+        <div>
+          <h1 className="text-3xl font-bold text-foreground">Reports</h1>
+          <p className="text-muted-foreground">View and manage your test reports</p>
+        </div>
+        <NotificationBell />
       </div>
 
       <div className="grid gap-4">

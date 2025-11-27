@@ -2,6 +2,7 @@ import React from 'react';
 import { Menu } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { UserMenu } from '@/components/ui/UserMenu';
+import { NotificationBell } from '@/components/ui/NotificationBell';
 
 interface ChatHeaderProps {
   title?: string;
@@ -41,6 +42,7 @@ export function ChatHeader({
         {title}
       </span>
       <div className="flex items-center gap-2 sm:gap-4">
+        <NotificationBell />
         <UserMenu
           user={user}
           onLogout={onLogout}
