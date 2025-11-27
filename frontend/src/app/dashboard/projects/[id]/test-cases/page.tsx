@@ -23,7 +23,7 @@ interface TestCase {
   test_data: string;
   expected_result: string;
   actual_result?: string;
-  status: 'Pass' | 'Fail' | 'Pending';
+  status: 'Pass' | 'Fail' | 'New';
   project_id?: string;
   chat_id?: string;
   created_at?: string;
@@ -270,7 +270,7 @@ export default function TestCasesPage() {
         return 'bg-green-100 text-green-800 border-green-200';
       case 'fail':
         return 'bg-red-100 text-red-800 border-red-200';
-      case 'pending':
+      case 'new':
         return 'bg-yellow-100 text-yellow-800 border-yellow-200';
       default:
         return 'bg-gray-100 text-gray-800 border-gray-200';
@@ -391,9 +391,9 @@ export default function TestCasesPage() {
               <Card>
                 <CardContent className="pt-6">
                   <div className="text-2xl font-bold text-gray-600">
-                    {testCases.filter(tc => tc.status === 'Pending').length}
+                    {testCases.filter(tc => tc.status === 'New').length}
                   </div>
-                  <p className="text-xs text-muted-foreground">Pending</p>
+                  <p className="text-xs text-muted-foreground">New</p>
                 </CardContent>
               </Card>
             </div>

@@ -33,7 +33,7 @@ TEST_CASES = [
             "test_data": None,
             "expected_result": "The Search Bar with placeholder text ('Search for products, brands and more') must be visible and enabled for input at the top of the page.",
             "actual_result": "",
-            "status": "Pending"
+            "status": "new"
         },
         {
             "test_case_id": "TC-SEARCH-002",
@@ -51,7 +51,7 @@ TEST_CASES = [
             "test_data": "Keyword: 'red'",
             "expected_result": "1. The auto-suggestion list must appear within 200ms.\n2. The suggestion list must contain relevant suggestions (e.g., Categories, Brands, or Trending terms) related to 'red'.",
             "actual_result": "",
-            "status": "Pending"
+            "status": "new"
         },
         {
             "test_case_id": "TC-SEARCH-003",
@@ -68,7 +68,7 @@ TEST_CASES = [
             "test_data": "Search Query: 'men shoes'",
             "expected_result": "The Search Results Page (SRP) for 'men shoes' should load successfully, displaying a list of relevant products.",
             "actual_result": "",
-            "status": "Pending"
+            "status": "new"
         },
         {
             "test_case_id": "TC-SRP-004",
@@ -86,7 +86,7 @@ TEST_CASES = [
             "test_data": "Search Query: 'red dress'",
             "expected_result": "1. Breadcrumbs should be visible.\n2. The total result count in the format 'X items found' (where X > 0) must be displayed.\n3. A product grid displaying multiple products must be visible.",
             "actual_result": "",
-            "status": "Pending"
+            "status": "new"
         },
         {
             "test_case_id": "TC-SRP-005",
@@ -102,7 +102,7 @@ TEST_CASES = [
             "test_data": "Search Query: 'nike sneakers'",
             "expected_result": "Each product card must display:\n1. Product Image.\n2. Product Title/Name.\n3. Product Brand.\n4. Current Price.\n5. Discount percentage (if applicable).",
             "actual_result": "",
-            "status": "Pending"
+            "status": "new"
         },
         {
             "test_case_id": "TC-SRP-006",
@@ -120,7 +120,7 @@ TEST_CASES = [
             "test_data": "Search Query: 'jeans'",
             "expected_result": "The Product Detail Page (PDP) loads successfully, displaying product details (description, sizes, reviews) and allowing the anonymous user to view the page content freely.",
             "actual_result": "",
-            "status": "Pending"
+            "status": "new"
         },
         {
             "test_case_id": "TC-SEARCH-007",
@@ -136,7 +136,7 @@ TEST_CASES = [
             "test_data": "Search Query: 'nike'",
             "expected_result": "The majority of the results, specifically the top results, should either have the word 'Nike' in the product title or display 'Nike' as the product brand.",
             "actual_result": "",
-            "status": "Pending"
+            "status": "new"
         },
         {
             "test_case_id": "TC-SEARCH-008",
@@ -623,7 +623,7 @@ def execute_test_case(chat_id: int, test_case_id: str, db: Session = Depends(get
 
     for tc in TEST_CASES:
         if tc.get('test_case_id') == test_case_id:
-            if tc.get('status', '').lower() != 'pending':
+            if tc.get('status', '').lower() != 'new':
                 raise HTTPException(status_code=400, detail='Test case already executed')
 
             # Mock execution result
@@ -651,7 +651,7 @@ def bulk_execute_test_cases(chat_id: int, payload: dict, db: Session = Depends(g
     for tc_id in test_case_ids:
         for tc in TEST_CASES:
             if tc.get('test_case_id') == tc_id:
-                if tc.get('status', '').lower() != 'pending':
+                if tc.get('status', '').lower() != 'new':
                     continue
                 import random
                 tc['status'] = 'Pass' if random.random() > 0.3 else 'Fail'
@@ -702,7 +702,7 @@ def execute_from_mongo(payload: dict, db: Session = Depends(get_db), user_id: in
     for unique_id in test_case_ids:
         for tc in TEST_CASES:
             if tc.get('test_case_unique_id') == unique_id:
-                if tc.get('status', '').lower() == 'pending':
+                if tc.get('status', '').lower() == 'new':
                     # Mock execution
                     import random
                     tc['status'] = 'Pass' if random.random() > 0.3 else 'Fail'
