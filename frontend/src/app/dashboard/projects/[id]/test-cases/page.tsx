@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Textarea } from '@/components/ui/textarea';
-import { Download, Play, CheckCircle, AlertCircle, ChevronDown, ChevronRight, Send } from 'lucide-react';
+import { Download, Play, CheckCircle, AlertCircle, ChevronDown, ChevronRight, Send, ChevronsLeft, ChevronLeft, ChevronRightIcon, ChevronsRight } from 'lucide-react';
 import { api } from '@/lib/api';
 import { useToast } from '@/hooks/useToast';
 import { NotificationBell } from '@/components/ui/NotificationBell';
@@ -48,6 +48,11 @@ export default function TestCasesPage() {
   const [commentInputs, setCommentInputs] = useState<Record<string, string>>({});
   const toast = useToast();
 
+  // Pagination state
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const [total, setTotal] = useState(0);
+
   // Computed state to check if any operation is in progress
   const isAnyOperationInProgress = executing || sendingToJira || updatingComment !== null;
 
@@ -55,18 +60,78 @@ export default function TestCasesPage() {
     if (chatId) {
       loadTestCases();
     }
-  }, [chatId]);
+  }, [chatId, page, pageSize]);
 
   const loadTestCases = async () => {
+    setLoading(true);
     try {
-      // Get test cases directly from the dedicated API
-      const response = await api.get(`/chat/${chatId}/test-cases`);
-      setTestCases(response.data);
+      // Get test cases directly from the dedicated API with pagination
+      const response = await api.get(`/chat/${chatId}/test-cases?page=${page}&page_size=${pageSize}`);
+      setTestCases(response.data.test_cases);
+      setTotal(response.data.total);
     } catch (error) {
       console.error('Failed to load test cases:', error);
     } finally {
       setLoading(false);
     }
+  };
+
+  // Pagination handlers
+  const totalPages = Math.ceil(total / pageSize);
+  const startItem = total === 0 ? 0 : (page - 1) * pageSize + 1;
+  const endItem = Math.min(page * pageSize, total);
+
+  const handlePageChange = (newPage: number) => {
+    if (newPage >= 1 && newPage <= totalPages) {
+      setPage(newPage);
+      setSelectedCases(new Set()); // Clear selection when changing pages
+      setExpandedRows(new Set()); // Collapse all rows
+    }
+  };
+
+  const handlePageSizeChange = (newSize: number) => {
+    setPageSize(newSize);
+    setPage(1); // Reset to first page
+    setSelectedCases(new Set()); // Clear selection
+    setExpandedRows(new Set()); // Collapse all rows
+  };
+
+  // Generate page numbers to display
+  const getPageNumbers = () => {
+    const pages: (number | string)[] = [];
+    const maxVisiblePages = 9;
+    
+    if (totalPages <= maxVisiblePages) {
+      for (let i = 1; i <= totalPages; i++) {
+        pages.push(i);
+      }
+    } else {
+      // Always show first page
+      pages.push(1);
+      
+      if (page > 4) {
+        pages.push('...');
+      }
+      
+      // Show pages around current page
+      const start = Math.max(2, page - 2);
+      const end = Math.min(totalPages - 1, page + 2);
+      
+      for (let i = start; i <= end; i++) {
+        pages.push(i);
+      }
+      
+      if (page < totalPages - 3) {
+        pages.push('...');
+      }
+      
+      // Always show last page
+      if (totalPages > 1) {
+        pages.push(totalPages);
+      }
+    }
+    
+    return pages;
   };
 
   // Removed handleBackToTesting - navigation to testing removed per design
@@ -368,7 +433,7 @@ export default function TestCasesPage() {
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               <Card>
                 <CardContent className="pt-6">
-                  <div className="text-2xl font-bold text-foreground">{testCases.length}</div>
+                  <div className="text-2xl font-bold text-foreground">{total}</div>
                   <p className="text-xs text-muted-foreground">Total Test Cases</p>
                 </CardContent>
               </Card>
@@ -377,7 +442,7 @@ export default function TestCasesPage() {
                   <div className="text-2xl font-bold text-green-600">
                     {testCases.filter(tc => tc.status === 'Pass').length}
                   </div>
-                  <p className="text-xs text-muted-foreground">Passed</p>
+                  <p className="text-xs text-muted-foreground">Passed (this page)</p>
                 </CardContent>
               </Card>
               <Card>
@@ -385,7 +450,7 @@ export default function TestCasesPage() {
                   <div className="text-2xl font-bold text-red-600">
                     {testCases.filter(tc => tc.status === 'Fail').length}
                   </div>
-                  <p className="text-xs text-muted-foreground">Failed</p>
+                  <p className="text-xs text-muted-foreground">Failed (this page)</p>
                 </CardContent>
               </Card>
               <Card>
@@ -393,7 +458,7 @@ export default function TestCasesPage() {
                   <div className="text-2xl font-bold text-gray-600">
                     {testCases.filter(tc => tc.status === 'New').length}
                   </div>
-                  <p className="text-xs text-muted-foreground">New</p>
+                  <p className="text-xs text-muted-foreground">New (this page)</p>
                 </CardContent>
               </Card>
             </div>
@@ -534,6 +599,97 @@ export default function TestCasesPage() {
                 </tbody>
               </table>
             </div>
+
+            {/* Pagination */}
+            {total > 0 && (
+              <div className="flex items-center justify-between bg-muted/30 rounded-lg px-4 py-3">
+                {/* Left side - Item count and page size */}
+                <div className="flex items-center gap-3">
+                  <span className="text-sm text-foreground">
+                    <strong>{startItem} - {endItem}</strong> of <strong>{total}</strong>
+                  </span>
+                  <select
+                    value={pageSize}
+                    onChange={(e) => handlePageSizeChange(Number(e.target.value))}
+                    className="border border-border rounded-md px-2 py-1 text-sm bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                    disabled={loading || isAnyOperationInProgress}
+                  >
+                    <option value={10}>10</option>
+                    <option value={25}>25</option>
+                    <option value={50}>50</option>
+                    <option value={100}>100</option>
+                  </select>
+                  <span className="text-sm text-muted-foreground">Per page</span>
+                </div>
+
+                {/* Right side - Page navigation */}
+                <div className="flex items-center gap-1">
+                  {/* First page */}
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handlePageChange(1)}
+                    disabled={page === 1 || loading || isAnyOperationInProgress}
+                    className="h-8 w-8 p-0"
+                  >
+                    <ChevronsLeft className="h-4 w-4" />
+                  </Button>
+
+                  {/* Previous page */}
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handlePageChange(page - 1)}
+                    disabled={page === 1 || loading || isAnyOperationInProgress}
+                    className="h-8 w-8 p-0"
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                  </Button>
+
+                  {/* Page numbers */}
+                  <div className="flex items-center gap-1 mx-2">
+                    {getPageNumbers().map((pageNum, index) => (
+                      pageNum === '...' ? (
+                        <span key={`ellipsis-${index}`} className="px-2 text-muted-foreground">...</span>
+                      ) : (
+                        <Button
+                          key={pageNum}
+                          variant={page === pageNum ? "default" : "ghost"}
+                          size="sm"
+                          onClick={() => handlePageChange(pageNum as number)}
+                          disabled={loading || isAnyOperationInProgress}
+                          className={`h-8 w-8 p-0 ${page === pageNum ? 'font-bold' : 'text-primary'}`}
+                        >
+                          {pageNum}
+                        </Button>
+                      )
+                    ))}
+                  </div>
+
+                  {/* Next page */}
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handlePageChange(page + 1)}
+                    disabled={page === totalPages || totalPages === 0 || loading || isAnyOperationInProgress}
+                    className="h-8 w-8 p-0"
+                  >
+                    <ChevronRightIcon className="h-4 w-4" />
+                  </Button>
+
+                  {/* Last page */}
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handlePageChange(totalPages)}
+                    disabled={page === totalPages || totalPages === 0 || loading || isAnyOperationInProgress}
+                    className="h-8 w-8 p-0"
+                  >
+                    <ChevronsRight className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>
